@@ -207,8 +207,6 @@ namespace WeArt.Components
 
         internal void OnConnectionChanged(bool connected)
         {
-            WeArtLog.Log("OnConnectionChanged\n");
-
             if (connected)
                 StartControl();
         }
@@ -281,8 +279,6 @@ namespace WeArt.Components
 
         private void SendMessage(Func<HandSide, ActuationPoint, IWeArtMessage> createMessage)
         {
-            WeArtLog.Log("SendMessage\n");
-
             if (_client == null)
                 return;
 
