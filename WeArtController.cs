@@ -1,3 +1,8 @@
+/**
+*	WEART - Controller and client wrapper
+*	https://www.weart.it/
+*/
+
 using System;
 using WeArt.Core;
 using WeArt.Utils;

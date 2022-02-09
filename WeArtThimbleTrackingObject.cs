@@ -1,3 +1,7 @@
+/**
+*	WEART - Thimble Tracking Object componet
+*	https://www.weart.it/
+*/
 
 using WeArt.Core;
 using WeArt.Messages;

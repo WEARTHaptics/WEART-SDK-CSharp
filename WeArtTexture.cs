@@ -1,3 +1,8 @@
+/**
+*	WEART - Texture component 
+*	https://www.weart.it/
+*/
+
 using System.Linq;
 using System;
 using WeArt.Utils;

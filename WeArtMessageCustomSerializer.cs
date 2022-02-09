@@ -1,4 +1,9 @@
-﻿using System;
+﻿/**
+*	WEART - Serializer helper
+*	https://www.weart.it/
+*/
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;

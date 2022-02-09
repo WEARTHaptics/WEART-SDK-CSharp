@@ -1,3 +1,8 @@
+/**
+*	WEART - Temperature component 
+*	https://www.weart.it/
+*/
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

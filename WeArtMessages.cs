@@ -1,3 +1,8 @@
+/**
+*	WEART - Message objects
+*	https://www.weart.it/
+*/
+
 using WeArt.Core;
 using static WeArt.Messages.WeArtMessageCustomSerializer;
 

@@ -1,3 +1,8 @@
+/**
+*	WEART - Log utility 
+*	https://www.weart.it/
+*/
+
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;

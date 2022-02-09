@@ -1,3 +1,8 @@
+/**
+*	WEART - Common TCP Client
+*	https://www.weart.it/
+*/
+
 using System;
 using System.Net;
 using System.Net.Sockets;

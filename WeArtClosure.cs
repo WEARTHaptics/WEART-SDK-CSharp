@@ -1,3 +1,8 @@
+/**
+*	WEART - Clousure Force
+*	https://www.weart.it/
+*/
+
 using System;
 
 namespace WeArt.Core

@@ -1,3 +1,8 @@
+/**
+*	WEART - Utility compares
+*	https://www.weart.it/
+*/
+
 using System;
 using System.Collections.Generic;
 

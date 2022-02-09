@@ -1,4 +1,9 @@
-﻿using System;
+﻿/**
+*	WEART - Message serializer
+*	https://www.weart.it/
+*/
+
+using System;
 using System.Text;
 
 namespace WeArt.Messages

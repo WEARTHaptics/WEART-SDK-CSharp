@@ -1,3 +1,8 @@
+/**
+*	WEART - Network helper
+*	https://www.weart.it/
+*/
+
 using System.Net.Sockets;
 using System.Net.NetworkInformation;
 using System.Linq;
