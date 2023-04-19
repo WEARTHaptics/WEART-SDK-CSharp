@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using WeArt.Core;
+using WeArt.Utils;
 
 namespace WeArt.Messages
 {
@@ -104,6 +105,8 @@ namespace WeArt.Messages
 
         private static object Deserialize(string data, Type type)
         {
+            if (type.IsEnum)
+                return Enum.Parse(type, data);
             if (typeof(IConvertible).IsAssignableFrom(type))
                 return ((IConvertible)data).ToType(type, CultureInfo.InvariantCulture);
 
@@ -123,7 +126,7 @@ namespace WeArt.Messages
             {
                 Id = id;
                 Type = type;
-                Fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance)
+                Fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                     .OrderBy(field => field.MetadataToken)
                     .ToArray();
             }
