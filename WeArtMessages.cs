@@ -4,6 +4,8 @@
 */
 
 using System;
+using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 using WeArt.Core;
 using static WeArt.Messages.WeArtMessageCustomSerializer;
 
@@ -19,7 +21,12 @@ namespace WeArt.Messages
     /// Message that requests the middleware to start and to turn on the hardware
     /// </summary>
     [WeArtMiddlewareMessageID("StartFromClient")]
-    public class StartFromClientMessage : IWeArtMessage { }
+    public class StartFromClientMessage : IWeArtMessage
+    {
+        public string SdkType = WeArtConstants.WEART_SDK_TYPE;
+        public string SdkVersion = WeArtConstants.WEART_SDK_VERSION;
+        public TrackingType TrackingType = TrackingType.WEART_HAND;
+    }
 
 
     /// <summary>
@@ -54,7 +61,8 @@ namespace WeArt.Messages
             get => _handSide == 0 ? HandSide.Left : HandSide.Right;
             set => _handSide = value == HandSide.Left ? (byte)0 : (byte)1;
         }
-        public CalibrationStatus Status {
+        public CalibrationStatus Status
+        {
             get => (CalibrationStatus)_status;
             set => _status = (byte)value;
         }
@@ -69,12 +77,14 @@ namespace WeArt.Messages
         private byte _handSide;
         private byte _success;
 
-        public HandSide HandSide { 
+        public HandSide HandSide
+        {
             get => _handSide == 0 ? HandSide.Left : HandSide.Right;
-            set => _handSide = value == HandSide.Left ? (byte)0 : (byte)1; 
+            set => _handSide = value == HandSide.Left ? (byte)0 : (byte)1;
         }
-        public bool Success { 
-            get => _success == 0; 
+        public bool Success
+        {
+            get => _success == 0;
             set => _success = value ? (byte)0 : (byte)1;
         }
     }

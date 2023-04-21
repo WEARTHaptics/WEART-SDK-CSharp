@@ -39,6 +39,12 @@ namespace WeArt.Core
         Middle = 2,
         Palm = 3,
     };
+
+    public enum TrackingType
+    {
+        DEFAULT,
+        WEART_HAND,
+    }
     
     /// <summary>
     /// The multi-selectable version of <see cref="ActuationPoint"/>
@@ -122,6 +128,9 @@ namespace WeArt.Core
     /// </summary>
     public static class WeArtConstants
     {
+        public const string WEART_SDK_TYPE = "SdkLLCSH";
+        public const string WEART_SDK_VERSION = "1.0.0";
+
         public const float defaultTemperature = 0.5f;
         public const float minTemperature = 0f;
         public const float maxTemperature = 1f;
