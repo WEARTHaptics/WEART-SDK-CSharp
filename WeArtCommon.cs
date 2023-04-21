@@ -139,6 +139,10 @@ namespace WeArt.Core
         public const float minForce = 0f;
         public const float maxForce = 1f;
 
+        public const float defaultAbduction = 0.5f;
+        public const float minAbduction = 0f;
+        public const float maxAbduction = 1f;
+
         public const float defaultClosure = 0f;
         public const float minClosure = 0f;
         public const float maxClosure = 1f;
