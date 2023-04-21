@@ -33,12 +33,36 @@ namespace WeArt.Messages
     /// Message that requests the middleware to start and to turn on the hardware
     /// </summary>
     [WeArtMiddlewareMessageID("StartFromClient")]
-    public class StartFromClientMessage : IWeArtMessage
+    public class StartFromClientMessage : IWeArtMessage, IWeArtMessageCustomSerialization
     {
         public string SdkType = WeArtConstants.WEART_SDK_TYPE;
         public string SdkVersion = WeArtConstants.WEART_SDK_VERSION;
         public TrackingType TrackingType = TrackingType.WEART_HAND;
-        // TODO fix serialization based on TrackingType 
+
+        public bool Deserialize(string[] fields)
+        {
+            // Default (deprecated)
+            if (fields.Length == 1)
+            {
+                TrackingType = TrackingType.DEFAULT;
+            }
+            // Other (newer) types
+            else
+            {
+                SdkType = fields[1];
+                SdkVersion = fields[2];
+                TrackingType = TrackingTypeExtension.Deserialize(fields[3]);
+            }
+            return true;
+        }
+
+        public string[] Serialize()
+        {
+            if (TrackingType == TrackingType.DEFAULT)
+                return new string[] { "StartFromClient" };
+            else
+                return new string[] { "StartFromClient", SdkType, SdkVersion, TrackingType.Serialize() };
+        }
     }
 
 
@@ -233,7 +257,7 @@ namespace WeArt.Messages
         {
             try
             {
-                TrackingType = StringToTrackingType(fields[0]);
+                TrackingType = TrackingTypeExtension.Deserialize(fields[0]);
                 switch (TrackingType)
                 {
                     case TrackingType.DEFAULT: DeserializeDefault(fields); break;
@@ -275,7 +299,7 @@ namespace WeArt.Messages
         {
             string[] fields = new string[9];
             int i = 0;
-            fields[i++] = "Tracking";
+            fields[i++] = TrackingType.Serialize();
             fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Thumb)).ToString();
             fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Index)).ToString();
             fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Middle)).ToString();
@@ -307,7 +331,7 @@ namespace WeArt.Messages
             string[] fields = new string[10];
             int i = 0;
             fields[i++] = "Tracking";
-            fields[i++] = TrackingTypeToString(TrackingType);
+            fields[i++] = TrackingType.Serialize();
 
             // Right Hand
             fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Index)).ToString();
@@ -323,22 +347,5 @@ namespace WeArt.Messages
 
             return fields;
         }
-
-        private string TrackingTypeToString(TrackingType type)
-        {
-            switch(type)
-            {
-                case TrackingType.DEFAULT: return "";
-                case TrackingType.WEART_HAND: return "TrackType1";
-            }
-            return "";
-        }
-
-        private TrackingType StringToTrackingType(string str)
-        {
-            if (str == "TrackType1") return TrackingType.WEART_HAND;
-            return TrackingType.DEFAULT;
-        }
-
     }
 }
