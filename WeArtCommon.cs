@@ -96,6 +96,16 @@ namespace WeArt.Core
         Released = 1
     }
 
+    /// <summary>
+    /// Status of the current calibration procedure
+    /// </summary>
+    public enum CalibrationStatus
+    {
+        IDLE = 0,
+        Calibrating = 1,
+        Running = 2,
+    };
+
     public static class WeArtUtility
     {
         /// <summary>

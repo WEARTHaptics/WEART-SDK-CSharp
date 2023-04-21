@@ -3,6 +3,7 @@
 *	https://www.weart.it/
 */
 
+using System;
 using WeArt.Core;
 using static WeArt.Messages.WeArtMessageCustomSerializer;
 
@@ -27,6 +28,56 @@ namespace WeArt.Messages
     [WeArtMiddlewareMessageID("StopFromClient")]
     public class StopFromClientMessage : IWeArtMessage { }
 
+    /// <summary>
+    /// Message that requests the middleware to start the calibration procedure
+    /// </summary>
+    [WeArtMiddlewareMessageID("StartCalibration")]
+    public class StartCalibrationMessage : IWeArtMessage { }
+
+    /// <summary>
+    /// Message that requests the middleware to stop the calibration procedure
+    /// </summary>
+    [WeArtMiddlewareMessageID("StopCalibration")]
+    public class StopCalibrationMessage : IWeArtMessage { }
+
+    /// <summary>
+    /// Message received from the middleware containing the current calibration procedure status
+    /// </summary>
+    [WeArtMiddlewareMessageID("CalibrationStatus")]
+    public class TrackingCalibrationStatus : IWeArtMessage
+    {
+        private byte _handSide;
+        private byte _status;
+
+        public HandSide HandSide
+        {
+            get => _handSide == 0 ? HandSide.Left : HandSide.Right;
+            set => _handSide = value == HandSide.Left ? (byte)0 : (byte)1;
+        }
+        public CalibrationStatus Status {
+            get => (CalibrationStatus)_status;
+            set => _status = (byte)value;
+        }
+    }
+
+    /// <summary>
+    /// Message received from the middleware containing the result of the calibration procedure
+    /// </summary>
+    [WeArtMiddlewareMessageID("CalibrationResult")]
+    public class TrackingCalibrationResult : IWeArtMessage
+    {
+        private byte _handSide;
+        private byte _success;
+
+        public HandSide HandSide { 
+            get => _handSide == 0 ? HandSide.Left : HandSide.Right;
+            set => _handSide = value == HandSide.Left ? (byte)0 : (byte)1; 
+        }
+        public bool Success { 
+            get => _success == 0; 
+            set => _success = value ? (byte)0 : (byte)1;
+        }
+    }
 
     /// <summary>
     /// Message received from the middleware upon closing it
