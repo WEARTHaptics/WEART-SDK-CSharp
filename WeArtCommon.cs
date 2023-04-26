@@ -39,7 +39,35 @@ namespace WeArt.Core
         Middle = 2,
         Palm = 3,
     };
-    
+
+    /// <summary>
+    /// Type of tracking method and messages used/sent by the middleware
+    /// </summary>
+    public enum TrackingType
+    {
+        DEFAULT,
+        WEART_HAND,
+    }
+
+    public static class TrackingTypeExtension
+    {
+        public static string Serialize(this TrackingType type)
+        {
+            switch (type)
+            {
+                case TrackingType.DEFAULT: return "";
+                case TrackingType.WEART_HAND: return "TrackType1";
+            }
+            return "";
+        }
+
+        public static TrackingType Deserialize(string str)
+        {
+            if (str == "TrackType1") return TrackingType.WEART_HAND;
+            return TrackingType.DEFAULT;
+        }
+    }
+
     /// <summary>
     /// The multi-selectable version of <see cref="ActuationPoint"/>
     /// </summary>
@@ -122,6 +150,9 @@ namespace WeArt.Core
     /// </summary>
     public static class WeArtConstants
     {
+        public const string WEART_SDK_TYPE = "SdkLLCSH";
+        public const string WEART_SDK_VERSION = "1.0.0";
+
         public const float defaultTemperature = 0.5f;
         public const float minTemperature = 0f;
         public const float maxTemperature = 1f;
@@ -129,6 +160,10 @@ namespace WeArt.Core
         public const float defaultForce = 0f;
         public const float minForce = 0f;
         public const float maxForce = 1f;
+
+        public const float defaultAbduction = 0.5f;
+        public const float minAbduction = 0f;
+        public const float maxAbduction = 1f;
 
         public const float defaultClosure = 0f;
         public const float minClosure = 0f;

@@ -33,6 +33,12 @@ namespace WeArt.Messages
         {
             try
             {
+                if(message is IWeArtMessageCustomSerialization serializableMessage)
+                {
+                    data = string.Join(separator.ToString(), serializableMessage.Serialize());
+                    return true;
+                }
+                
                 var messageType = message.GetType();
                 var reflectionData = ReflectionData.GetFrom(messageType);
 
@@ -64,13 +70,16 @@ namespace WeArt.Messages
                 var reflectionData = ReflectionData.GetFrom(messageID);
 
                 message = (IWeArtMessage)Activator.CreateInstance(reflectionData.Type);
+
+                if (message is IWeArtMessageCustomSerialization deserializableMessage)
+                    return deserializableMessage.Deserialize(split);
+                
                 for (int i = 1; i < split.Length; i++)
                 {
                     var field = reflectionData.Fields[i - 1];
                     var value = Deserialize(split[i], field.FieldType);
                     field.SetValue(message, value);
                 }
-
                 return true;
             }
             catch (Exception)

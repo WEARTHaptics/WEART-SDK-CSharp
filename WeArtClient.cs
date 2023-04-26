@@ -122,7 +122,7 @@ namespace WeArt.Core
         /// Establishes a connection to the middleware and send the <see cref="StartFromClientMessage"/>
         /// </summary>
         /// <returns>The task running during the entire life of the network connection</returns>
-        public Task Start()
+        public Task Start(TrackingType trackingType = TrackingType.WEART_HAND)
         {
             _cancellation = new CancellationTokenSource();
             return Task.Run(() =>
@@ -142,7 +142,7 @@ namespace WeArt.Core
                         _mainThreadContext.Post(state => OnConnectionStatusChanged?.Invoke(true), this);
 
                         // Send the request to start
-                        SendMessage(new StartFromClientMessage());
+                        SendMessage(new StartFromClientMessage { TrackingType = trackingType });
                     }
                     catch (Exception e)
                     {
