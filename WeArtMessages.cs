@@ -257,7 +257,7 @@ namespace WeArt.Messages
         {
             try
             {
-                TrackingType = TrackingTypeExtension.Deserialize(fields[0]);
+                TrackingType = TrackingTypeExtension.Deserialize(fields[1]);
                 switch (TrackingType)
                 {
                     case TrackingType.DEFAULT: DeserializeDefault(fields); break;
@@ -299,7 +299,7 @@ namespace WeArt.Messages
         {
             string[] fields = new string[9];
             int i = 0;
-            fields[i++] = TrackingType.Serialize();
+            fields[i++] = "Tracking";
             fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Thumb)).ToString();
             fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Index)).ToString();
             fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Middle)).ToString();

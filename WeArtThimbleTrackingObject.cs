@@ -46,13 +46,15 @@ namespace WeArt.Components
         /// </summary>
         public Abduction Abduction { get; private set; }
 
-        public WeArtThimbleTrackingObject(WeArtClient client)
+        public WeArtThimbleTrackingObject(WeArtClient client, HandSide handSide = HandSide.Right, ActuationPoint actuationPoint = ActuationPoint.Index)
         {
             _client = client;
             _client.OnConnectionStatusChanged -= OnConnectionChanged;
             _client.OnConnectionStatusChanged += OnConnectionChanged;
             _client.OnMessage -= OnMessageReceived;
             _client.OnMessage += OnMessageReceived;
+            HandSide = handSide;
+            ActuationPoint = actuationPoint;
         }
 
         internal void OnConnectionChanged(bool connected)
