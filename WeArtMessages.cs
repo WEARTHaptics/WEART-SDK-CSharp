@@ -5,9 +5,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
 using WeArt.Core;
-using Windows.UI.WebUI;
 using static WeArt.Messages.WeArtMessageCustomSerializer;
 
 namespace WeArt.Messages
@@ -219,7 +217,7 @@ namespace WeArt.Messages
     {
         public TrackingType TrackingType { get; set; }
         private readonly Dictionary<(HandSide, ActuationPoint), byte> Closures = new Dictionary<(HandSide, ActuationPoint), byte>();
-        private readonly Dictionary<(HandSide, ActuationPoint), float> Abductions = new Dictionary<(HandSide, ActuationPoint), float>();
+        private readonly Dictionary<(HandSide, ActuationPoint), byte> Abductions = new Dictionary<(HandSide, ActuationPoint), byte>();
 
         /// <summary>
         /// Allows to get the closure value for agiven actuation point on a given hand.
@@ -248,8 +246,9 @@ namespace WeArt.Messages
         /// <returns>the closure value of the given point and hand</returns>
         public Abduction GetAbduction(HandSide handSide, ActuationPoint actuationPoint)
         {
+            float abductionMaxValue = 255;
             if (Abductions.ContainsKey((handSide, actuationPoint)))
-                return new Abduction { Value = Abductions[(handSide, actuationPoint)] };
+                return new Abduction { Value = Abductions[(handSide, actuationPoint)] / abductionMaxValue };
             return new Abduction { Value = 0 };
         }
 
@@ -316,13 +315,13 @@ namespace WeArt.Messages
             // Right Hand
             Closures[(HandSide.Right, ActuationPoint.Index)] = byte.Parse(fields[2]);
             Closures[(HandSide.Right, ActuationPoint.Thumb)] = byte.Parse(fields[3]);
-            Abductions[(HandSide.Right, ActuationPoint.Thumb)] = float.Parse(fields[4]);
+            Abductions[(HandSide.Right, ActuationPoint.Thumb)] = byte.Parse(fields[4]);
             Closures[(HandSide.Right, ActuationPoint.Middle)] = byte.Parse(fields[5]);
 
             // Left Hand
             Closures[(HandSide.Left, ActuationPoint.Index)] = byte.Parse(fields[6]);
             Closures[(HandSide.Left, ActuationPoint.Thumb)] = byte.Parse(fields[7]);
-            Abductions[(HandSide.Left, ActuationPoint.Thumb)] = float.Parse(fields[8]);
+            Abductions[(HandSide.Left, ActuationPoint.Thumb)] = byte.Parse(fields[8]);
             Closures[(HandSide.Left, ActuationPoint.Middle)] = byte.Parse(fields[9]);
         }
 
