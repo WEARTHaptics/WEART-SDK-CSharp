@@ -5,7 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 
 namespace WeArt.Core
 {
@@ -45,26 +47,64 @@ namespace WeArt.Core
     /// </summary>
     public enum TrackingType
     {
-        DEFAULT,
+        /// <summary>
+        /// Default tracking type, only closures (for right/left thumb/index/middle/palm)
+        /// </summary>
+        [Description("")]
+        DEFAULT = 0,
+
+        /// <summary>
+        /// Closure values for fingers, and thumb abduction value
+        /// </summary>
+        [Description("TrackType1")]
         WEART_HAND,
     }
 
+    /// <summary>
+    /// Contains extension and util methods for the TrackingType enum.
+    /// </summary>
     public static class TrackingTypeExtension
     {
+        /// <summary>
+        /// Serializes the trackingtype enum by outputting its description
+        /// </summary>
+        /// <param name="type">Enum value to serialize</param>
+        /// <returns>enum value serialized to string</returns>
         public static string Serialize(this TrackingType type)
         {
-            switch (type)
-            {
-                case TrackingType.DEFAULT: return "";
-                case TrackingType.WEART_HAND: return "TrackType1";
-            }
-            return "";
+            return type.GetDescription();
         }
 
+        /// <summary>
+        /// Deserializes the trackingtype enum value from a given string, based on the type description
+        /// </summary>
+        /// <param name="str">String to deserialize into TrackingType</param>
+        /// <returns>the deserialized TrackingType value</returns>
         public static TrackingType Deserialize(string str)
         {
-            if (str == "TrackType1") return TrackingType.WEART_HAND;
-            return TrackingType.DEFAULT;
+            return Enum.GetValues(typeof(TrackingType))
+                .Cast<TrackingType>()
+                .FirstOrDefault(t => t.GetDescription() == str);
+        }
+
+        /// <summary>
+        /// Get the value of the Description attribute for the given Tracking Type value
+        /// </summary>
+        /// <param name="value">Tracking Type value from which to get the description</param>
+        /// <returns>tracking type value description, or empty string otherwise</returns>
+        public static string GetDescription(this TrackingType value)
+        {
+            Type genericEnumType = value.GetType();
+            MemberInfo[] memberInfo = genericEnumType.GetMember(value.ToString());
+            if ((memberInfo != null && memberInfo.Length > 0))
+            {
+                var _Attribs = memberInfo[0].GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false);
+                if ((_Attribs != null && _Attribs.Any()))
+                {
+                    return ((DescriptionAttribute)_Attribs.ElementAt(0)).Description;
+                }
+            }
+            return "";
         }
     }
 
@@ -89,7 +129,7 @@ namespace WeArt.Core
         ClickNormal = 0, ClickSoft = 1, DoubleClick = 2,
         AluminiumFineMeshSlow = 3, AluminiumFineMeshFast = 4,
         PlasticMeshSlow = 5, ProfiledAluminiumMeshMedium = 6, ProfiledAluminiumMeshFast = 7,
-        RhombAluminiumMeshMedium = 8, 
+        RhombAluminiumMeshMedium = 8,
         TextileMeshMedium = 9,
         CrushedRock = 10,
         VenetianGranite = 11,
@@ -161,7 +201,7 @@ namespace WeArt.Core
         public const float minForce = 0f;
         public const float maxForce = 1f;
 
-        public const float defaultAbduction = 0.5f;
+        public const float defaultAbduction = 0.442f;
         public const float minAbduction = 0f;
         public const float maxAbduction = 1f;
 
@@ -173,7 +213,7 @@ namespace WeArt.Core
         public const int minTextureIndex = (int)TextureType.ClickNormal;
         public const int maxTextureIndex = (int)TextureType.DoubleSidedTape;
         public const int nullTextureIndex = 255;
-        
+
         public const float defaultTextureVelocity_X = 0.5f;
         public const float defaultTextureVelocity_Y = 0f;
         public const float defaultTextureVelocity_Z = 0f;
