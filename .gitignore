@@ -48,3 +48,5 @@ Thumbs.db
 *.mov
 *.wmv
 
+# Doxygen generated docs directory
+generated_docs
