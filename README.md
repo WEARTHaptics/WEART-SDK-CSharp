@@ -40,7 +40,7 @@ Create the WeArtClient and start the communication with the middleware:
 	weArtClient.Start();
 ~~~~~~~~~~~~~
 
-@note The call to WeArtClient.Start() will also start the middleware, so be sure to have connected the devices before
+\note The call to WeArtClient.Start() will also start the middleware, so be sure to have connected the devices before
 
 # Features
 
