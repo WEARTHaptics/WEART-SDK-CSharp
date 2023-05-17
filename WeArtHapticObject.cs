@@ -163,6 +163,7 @@ namespace WeArt.Components
         /// as long as it is not removed or the haptic properties are programmatically
         /// forced to have a specified value.
         /// </summary>
+        /// <remarks>When called, this methods replaces the latest effect applied with the new one</remarks>
         /// <param name="effect">The haptic effect to add to this object</param>
         public void AddEffect(IWeArtEffect effect)
         {
@@ -174,6 +175,8 @@ namespace WeArt.Components
         /// <summary>
         /// Removes a haptic effect from the set of influencing effects
         /// </summary>
+        /// <remarks>When called, this methods removes the (only) active effect, leaving the
+        /// haptic object without applied effects</remarks>
         /// <param name="effect">The haptic effect to remove</param>
         public void RemoveEffect(IWeArtEffect effect)
         {
@@ -270,7 +273,7 @@ namespace WeArt.Components
         private void SendSetTexture() => SendMessage((handSide, actuationPoint) => new SetTextureMessage()
         {
             TextureIndex = (int)_texture.TextureType,
-            TextureVelocity = new float[] { _texture.VelocityX, _texture.VelocityY, _texture.VelocityZ },
+            TextureVelocity = new float[] { 0.5f, 0.0f, _texture.Velocity },
             TextureVolume = _texture.Volume,
             HandSide = handSide,
             ActuationPoint = actuationPoint

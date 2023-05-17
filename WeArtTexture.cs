@@ -22,9 +22,7 @@ namespace WeArt.Core
         public static Texture Default = new Texture
         {
             TextureType = (TextureType)WeArtConstants.defaultTextureIndex,
-            VelocityX = WeArtConstants.defaultTextureVelocity_X,
-            VelocityY = WeArtConstants.defaultTextureVelocity_Y,
-            VelocityZ = WeArtConstants.defaultTextureVelocity_Z,
+            Velocity = WeArtConstants.defaultTextureVelocity,
             Volume = WeArtConstants.defaultVolumeTexture,
             Active = false
         };
@@ -33,9 +31,7 @@ namespace WeArt.Core
         internal TextureType _textureType;
 
         internal bool _active;
-
-        private float _vx, _vy, _vz;
-
+        private float _vz;
         private float _volume;
 
 
@@ -58,27 +54,9 @@ namespace WeArt.Core
         }
 
         /// <summary>
-        /// The horizontal component of the 3D velocity, normalized between 0 (min velocity) and 1 (max velocity)
+        /// The forward component of the 3D velocity, normalized between 0 (min velocity) and 0.5 (max velocity)
         /// </summary>
-        public float VelocityX
-        {
-            get => _vx;
-            set => _vx = Math.Clamp(value, WeArtConstants.minTextureVelocity, WeArtConstants.maxTextureVelocity);
-        }
-
-        /// <summary>
-        /// The vertical component of the 3D velocity, normalized between 0 (min velocity) and 1 (max velocity)
-        /// </summary>
-        public float VelocityY
-        {
-            get => _vy;
-            set => _vy = Math.Clamp(value, WeArtConstants.minTextureVelocity, WeArtConstants.maxTextureVelocity);
-        }
-
-        /// <summary>
-        /// The forward component of the 3D velocity, normalized between 0 (min velocity) and 1 (max velocity)
-        /// </summary>
-        public float VelocityZ
+        public float Velocity
         {
             get => _vz;
             set => _vz = Math.Clamp(value, WeArtConstants.minTextureVelocity, WeArtConstants.maxTextureVelocity);
@@ -109,9 +87,7 @@ namespace WeArt.Core
         {
             return obj is Texture texture &&
                 TextureType == texture.TextureType &&
-                ApproximateFloatComparer.Instance.Equals(VelocityX, texture.VelocityX) &&
-                ApproximateFloatComparer.Instance.Equals(VelocityY, texture.VelocityY) &&
-                ApproximateFloatComparer.Instance.Equals(VelocityZ, texture.VelocityZ) &&
+                ApproximateFloatComparer.Instance.Equals(Velocity, texture.Velocity) &&
                 Volume == texture.Volume &&
                 Active == texture.Active;
         }
