@@ -164,6 +164,8 @@ It is then added to the haptic object if not already present (if the effect is a
 		hapticObject.AddEffect(touchEffect);
 ~~~~~~~~~~~~~
 
+@note When a new effect is added, the last effect applied is replaced by the new effect.
+
 ### Remove Effect
 
 If an effect is not needed anymore, it can be removed from the haptic object with the RemoveEffect method.
@@ -172,6 +174,8 @@ If an effect is not needed anymore, it can be removed from the haptic object wit
 	hapticObject.RemoveEffect(touchEffect);
 ~~~~~~~~~~~~~
 
+@note When a new effect is added, the last effect applied is replaced by the new effect.
+
 ## Tracking
 
 After starting the middleware and performing the device calibration, it's possible to receive tracking data
@@ -179,7 +183,7 @@ related to the TouchDIVER thimbles.
 
 To read these values, create and set a thimble tracker object for monitoring the closure/abduction value of a given finger:
 ~~~~~~~~~~~~~{.cs}
-	WeArtThimbleTrackingObject indexThimbleTracking = new WeArtThimbleTrackingObject(weArtClient, HandSide.Right, ActuationPoint.Index);
+	WeArtThimbleTrackingObject thumbThimbleTracking = new WeArtThimbleTrackingObject(weArtClient, HandSide.Right, ActuationPoint.Index);
 ~~~~~~~~~~~~~
 
 Once this object is created, it will start receiving the tracking values.
@@ -190,6 +194,8 @@ The closure value ranges from 0 (opened) to 1 (closed).
 The abduction value ranges from 0 (finger near the hand's central axis) to 1 (finger far from the hand central axis).
 
 ~~~~~~~~~~~~~{.cs}
-	float closure = indexThimbleTracking.Closure.Value;
-	float abduction = indexThimbleTracking.Abduction.Value;
+	float closure = thumbThimbleTracking.Closure.Value;
+    float abduction = thumbThimbleTracking.Abduction.Value;
 ~~~~~~~~~~~~~
+
+@note The **closure** value is available for all thimbles, while the **abduction** value is available only for the thumb (other thimbles will have a value of 0).

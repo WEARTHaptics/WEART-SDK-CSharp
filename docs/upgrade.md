@@ -7,9 +7,14 @@ The new version includes additional files, so it's necessary to add them to the 
 This can be done on Visual Studio by right-clicking on the solution, then clicking on Add -> Existing Item and selecting all the SDK files.
 On other systems (e.g. cmake) the procedure might be different.
 
-The SDK is retro-compatible with older versions, so there's no need to update the application code. To see the new feature and fixes added to each version, refer to the Changelog section.
+## Code Migration
+
+The new SDK version is mostly compatible with the older version.
+The only breaking change introduced relates to the WeArtTexture class, in which the ```VelocityX``` and ```VelocityY``` params has been removed because are not used anymore. The ```VelocityZ``` parameter has been renamed to ```Velocity```, and represents the speed at which the texture vibration is played by the thimble.
 
 ## Changelog
 ### Version 1.1 (latest)
 * Add calibration procedure start/stop and listener
 * Add new default tracking message and values for closure
+* Add basic effect class for haptic feedback
+* Remove unused velocity parameters from texture
