@@ -214,11 +214,9 @@ namespace WeArt.Core
         public const int maxTextureIndex = (int)TextureType.DoubleSidedTape;
         public const int nullTextureIndex = 255;
 
-        public const float defaultTextureVelocity_X = 0.5f;
-        public const float defaultTextureVelocity_Y = 0f;
-        public const float defaultTextureVelocity_Z = 0f;
+        public const float defaultTextureVelocity = 0f;
         public const float minTextureVelocity = 0f;
-        public const float maxTextureVelocity = 1f;
+        public const float maxTextureVelocity = 0.5f;
 
         public const float defaultCollisionMultiplier = 20.0f;
         public const float minCollisionMultiplier = 0f;
