@@ -5,7 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 
 namespace WeArt.Core
 {
@@ -39,7 +41,73 @@ namespace WeArt.Core
         Middle = 2,
         Palm = 3,
     };
-    
+
+    /// <summary>
+    /// Type of tracking method and messages used/sent by the middleware
+    /// </summary>
+    public enum TrackingType
+    {
+        /// <summary>
+        /// Default tracking type, only closures (for right/left thumb/index/middle/palm)
+        /// </summary>
+        [Description("")]
+        DEFAULT = 0,
+
+        /// <summary>
+        /// Closure values for fingers, and thumb abduction value
+        /// </summary>
+        [Description("TrackType1")]
+        WEART_HAND,
+    }
+
+    /// <summary>
+    /// Contains extension and util methods for the TrackingType enum.
+    /// </summary>
+    public static class TrackingTypeExtension
+    {
+        /// <summary>
+        /// Serializes the trackingtype enum by outputting its description
+        /// </summary>
+        /// <param name="type">Enum value to serialize</param>
+        /// <returns>enum value serialized to string</returns>
+        public static string Serialize(this TrackingType type)
+        {
+            return type.GetDescription();
+        }
+
+        /// <summary>
+        /// Deserializes the trackingtype enum value from a given string, based on the type description
+        /// </summary>
+        /// <param name="str">String to deserialize into TrackingType</param>
+        /// <returns>the deserialized TrackingType value</returns>
+        public static TrackingType Deserialize(string str)
+        {
+            return Enum.GetValues(typeof(TrackingType))
+                .Cast<TrackingType>()
+                .FirstOrDefault(t => t.GetDescription() == str);
+        }
+
+        /// <summary>
+        /// Get the value of the Description attribute for the given Tracking Type value
+        /// </summary>
+        /// <param name="value">Tracking Type value from which to get the description</param>
+        /// <returns>tracking type value description, or empty string otherwise</returns>
+        public static string GetDescription(this TrackingType value)
+        {
+            Type genericEnumType = value.GetType();
+            MemberInfo[] memberInfo = genericEnumType.GetMember(value.ToString());
+            if ((memberInfo != null && memberInfo.Length > 0))
+            {
+                var _Attribs = memberInfo[0].GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false);
+                if ((_Attribs != null && _Attribs.Any()))
+                {
+                    return ((DescriptionAttribute)_Attribs.ElementAt(0)).Description;
+                }
+            }
+            return "";
+        }
+    }
+
     /// <summary>
     /// The multi-selectable version of <see cref="ActuationPoint"/>
     /// </summary>
@@ -61,7 +129,7 @@ namespace WeArt.Core
         ClickNormal = 0, ClickSoft = 1, DoubleClick = 2,
         AluminiumFineMeshSlow = 3, AluminiumFineMeshFast = 4,
         PlasticMeshSlow = 5, ProfiledAluminiumMeshMedium = 6, ProfiledAluminiumMeshFast = 7,
-        RhombAluminiumMeshMedium = 8, 
+        RhombAluminiumMeshMedium = 8,
         TextileMeshMedium = 9,
         CrushedRock = 10,
         VenetianGranite = 11,
@@ -96,6 +164,16 @@ namespace WeArt.Core
         Released = 1
     }
 
+    /// <summary>
+    /// Status of the current calibration procedure
+    /// </summary>
+    public enum CalibrationStatus
+    {
+        IDLE = 0,
+        Calibrating = 1,
+        Running = 2,
+    };
+
     public static class WeArtUtility
     {
         /// <summary>
@@ -112,6 +190,9 @@ namespace WeArt.Core
     /// </summary>
     public static class WeArtConstants
     {
+        public const string WEART_SDK_TYPE = "SdkLLCSH";
+        public const string WEART_SDK_VERSION = "1.0.0";
+
         public const float defaultTemperature = 0.5f;
         public const float minTemperature = 0f;
         public const float maxTemperature = 1f;
@@ -119,6 +200,10 @@ namespace WeArt.Core
         public const float defaultForce = 0f;
         public const float minForce = 0f;
         public const float maxForce = 1f;
+
+        public const float defaultAbduction = 0.442f;
+        public const float minAbduction = 0f;
+        public const float maxAbduction = 1f;
 
         public const float defaultClosure = 0f;
         public const float minClosure = 0f;
@@ -128,12 +213,10 @@ namespace WeArt.Core
         public const int minTextureIndex = (int)TextureType.ClickNormal;
         public const int maxTextureIndex = (int)TextureType.DoubleSidedTape;
         public const int nullTextureIndex = 255;
-        
-        public const float defaultTextureVelocity_X = 0.5f;
-        public const float defaultTextureVelocity_Y = 0f;
-        public const float defaultTextureVelocity_Z = 0f;
+
+        public const float defaultTextureVelocity = 0f;
         public const float minTextureVelocity = 0f;
-        public const float maxTextureVelocity = 1f;
+        public const float maxTextureVelocity = 0.5f;
 
         public const float defaultCollisionMultiplier = 20.0f;
         public const float minCollisionMultiplier = 0f;

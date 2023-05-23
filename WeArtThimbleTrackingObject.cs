@@ -39,19 +39,22 @@ namespace WeArt.Components
         /// <summary>
         /// The closure measure received from the hardware
         /// </summary>
-        public Closure Closure
-        {
-            get;
-            private set;
-        }
+        public Closure Closure { get; private set; }
 
-        public WeArtThimbleTrackingObject(WeArtClient client)
+        /// <summary>
+        /// The abduction measure received from the hardware (if any)
+        /// </summary>
+        public Abduction Abduction { get; private set; }
+
+        public WeArtThimbleTrackingObject(WeArtClient client, HandSide handSide = HandSide.Right, ActuationPoint actuationPoint = ActuationPoint.Index)
         {
             _client = client;
             _client.OnConnectionStatusChanged -= OnConnectionChanged;
             _client.OnConnectionStatusChanged += OnConnectionChanged;
             _client.OnMessage -= OnMessageReceived;
             _client.OnMessage += OnMessageReceived;
+            HandSide = handSide;
+            ActuationPoint = actuationPoint;
         }
 
         internal void OnConnectionChanged(bool connected)
@@ -61,10 +64,13 @@ namespace WeArt.Components
 
         private void OnMessageReceived(WeArtClient.MessageType type, IWeArtMessage message)
         {
-            if (type == WeArtClient.MessageType.MessageReceived)
+            if (type != WeArtClient.MessageType.MessageReceived)
+                return;
+
+            if (message is TrackingMessage trackingMessage)
             {
-                if (message is TrackingMessage trackingMessage)
-                    Closure = trackingMessage.GetClosure(HandSide, ActuationPoint);
+                Closure = trackingMessage.GetClosure(HandSide, ActuationPoint);
+                Abduction = trackingMessage.GetAbduction(HandSide, ActuationPoint);
             }
         }
     }

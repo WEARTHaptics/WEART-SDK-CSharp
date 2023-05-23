@@ -73,11 +73,32 @@ namespace WeArt.Core
         /// </summary>
         public event Action<ErrorType, Exception> OnError;
 
+        // Calibration Events
+
+        /// <summary>
+        /// Called when the calibration procedure starts
+        /// </summary>
+        public event Action<HandSide> OnCalibrationStart;
+
+        /// <summary>
+        /// Called when the calibration procedure ends
+        /// </summary>
+        public event Action<HandSide> OnCalibrationFinish;
+
+        /// <summary>
+        /// Called when the calibration procedure is successful
+        /// </summary>
+        public event Action<HandSide> OnCalibrationResultSuccess;
+
+        /// <summary>
+        /// Called when the calibration procedure faild
+        /// </summary>
+        public event Action<HandSide> OnCalibrationResultFail;
+
         /// <summary>
         /// True if a connection to the middleware has been established
         /// </summary>
         public bool IsConnected => _socket != null && _socket.Connected;
-
 
         /// <summary>
         /// The IP address of the middleware network endpoint
@@ -101,7 +122,7 @@ namespace WeArt.Core
         /// Establishes a connection to the middleware and send the <see cref="StartFromClientMessage"/>
         /// </summary>
         /// <returns>The task running during the entire life of the network connection</returns>
-        public Task Start()
+        public Task Start(TrackingType trackingType = TrackingType.WEART_HAND)
         {
             _cancellation = new CancellationTokenSource();
             return Task.Run(() =>
@@ -121,7 +142,7 @@ namespace WeArt.Core
                         _mainThreadContext.Post(state => OnConnectionStatusChanged?.Invoke(true), this);
 
                         // Send the request to start
-                        SendMessage(new StartFromClientMessage());
+                        SendMessage(new StartFromClientMessage { TrackingType = trackingType });
                     }
                     catch (Exception e)
                     {
@@ -153,6 +174,22 @@ namespace WeArt.Core
         {
             SendMessage(new StopFromClientMessage());
             StopConnection();
+        }
+
+        /// <summary>
+        /// Starts the calibration procedure
+        /// </summary>
+        public void StartCalibration()
+        {
+            SendMessage(new StartCalibrationMessage());
+        }
+
+        /// <summary>
+        /// Stops the calibration procedure
+        /// </summary>
+        public void StopCalibration()
+        {
+            SendMessage(new StopCalibrationMessage());
         }
 
         /// <summary>
@@ -211,8 +248,7 @@ namespace WeArt.Core
                         for (int i = 0; i < messages.Length; i++)
                         {
                             _messageSerializer.Deserialize(split[i], out messages[i]);
-                            OnMessage?.Invoke(MessageType.MessageReceived, messages[i]);
-                            OnTextMessage?.Invoke(MessageType.MessageReceived, split[i]);
+                            ForwardMessage(split[i], messages[i]);
                         }
                         return true;
                     }
@@ -226,6 +262,39 @@ namespace WeArt.Core
 
             messages = null;
             return false;
+        }
+
+        /// <summary>
+        /// Called internally to forward a message to all the related events
+        /// </summary>
+        /// <param name="messageText">String from which the message was deserialized</param>
+        /// <param name="message">Received message</param>
+        private void ForwardMessage(string messageText, IWeArtMessage message)
+        {
+            // Generic forward
+            OnMessage?.Invoke(MessageType.MessageReceived, message);
+            OnTextMessage?.Invoke(MessageType.MessageReceived, messageText);
+
+            // Manage calibration messages
+            if (message is TrackingCalibrationStatus calibrationStatus)
+            {
+                switch (calibrationStatus.Status)
+                {
+                    case CalibrationStatus.Calibrating:
+                        OnCalibrationStart?.Invoke(calibrationStatus.HandSide);
+                        break;
+                    case CalibrationStatus.Running:
+                        OnCalibrationFinish?.Invoke(calibrationStatus.HandSide);
+                        break;
+                }
+            }
+            else if (message is TrackingCalibrationResult calibrationResult)
+            {
+                if (calibrationResult.Success)
+                    OnCalibrationResultSuccess?.Invoke(calibrationResult.HandSide);
+                else
+                    OnCalibrationResultFail?.Invoke(calibrationResult.HandSide);
+            }
         }
 
         /// <summary>
