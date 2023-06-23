@@ -192,6 +192,16 @@ namespace WeArt.Core
             SendMessage(new StopCalibrationMessage());
         }
 
+        public void StartRawData()
+        {
+            SendMessage(new RawDataOnMessage());
+        }
+
+        public void StopRawData()
+        {
+            SendMessage(new RawDataOffMessage());
+        }
+
         /// <summary>
         /// Sends a message to the middleware
         /// </summary>

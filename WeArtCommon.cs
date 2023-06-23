@@ -3,6 +3,7 @@
 *	https://www.weart.it/
 */
 
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -173,6 +174,34 @@ namespace WeArt.Core
         Calibrating = 1,
         Running = 2,
     };
+
+    public struct Accelerometer
+    {
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+    }
+
+    public struct Gyroscope
+    {
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+    }
+
+    public struct TimeOfFlight
+    {
+        public int Distance { get; set; }
+    }
+
+    public class SensorsData
+    {
+        [JsonIgnore]
+        public DateTime Timestamp { get; set; }
+        public Accelerometer Accelerometer { get; set; }
+        public Gyroscope Gyroscope { get; set; }
+        public TimeOfFlight TimeOfFlight { get; set; }
+    }
 
     public static class WeArtUtility
     {

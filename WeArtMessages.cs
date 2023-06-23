@@ -353,4 +353,21 @@ namespace WeArt.Messages
             return fields;
         }
     }
+
+
+    [WeArtMiddlewareMessageID("RAW_DATA_ON")]
+    public class RawDataOnMessage : WeArtJsonMessage { }
+
+    [WeArtMiddlewareMessageID("RAW_DATA_OFF")]
+    public class RawDataOffMessage : WeArtJsonMessage { }
+
+    [WeArtMiddlewareMessageID("RAW_DATA")]
+    public class RawDataMessage : WeArtJsonMessage
+    {
+        public HandSide HandSide { get; set; }
+        public SensorsData Index { get; set; }
+        public SensorsData Thumb { get; set; }
+        public SensorsData Middle { get; set; }
+        public SensorsData Palm { get; set; }
+    }
 }
