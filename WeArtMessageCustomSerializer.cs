@@ -3,14 +3,16 @@
 *	https://www.weart.it/
 */
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using WeArt.Core;
-using WeArt.Utils;
 
 namespace WeArt.Messages
 {
@@ -29,18 +31,37 @@ namespace WeArt.Messages
             public WeArtMiddlewareMessageIDAttribute(string id) => ID = id;
         }
 
+        internal class JsonMessageTemplate
+        {
+            [JsonProperty(PropertyName = "ts")]
+            [JsonConverter(typeof(MillisecondsEpochConverter))]
+            public DateTime Timestamp { get; set; }
+
+            [JsonProperty(PropertyName = "type")]
+            public string Type { get; set; }
+
+            [JsonProperty(PropertyName = "data")]
+            public JToken Data { get; set; }
+        }
+
         public override bool Serialize(IWeArtMessage message, out string data)
         {
             try
             {
-                if(message is IWeArtMessageCustomSerialization serializableMessage)
+                if (message is IWeArtMessageCustomSerialization serializableMessage)
                 {
                     data = string.Join(separator.ToString(), serializableMessage.Serialize());
                     return true;
                 }
-                
+
                 var messageType = message.GetType();
                 var reflectionData = ReflectionData.GetFrom(messageType);
+
+                if (message is WeArtJsonMessage jsonMessage)
+                {
+                    data = SerializeJsonMessage(reflectionData, jsonMessage);   
+                    return true;
+                }
 
                 var values = reflectionData.Fields
                     .Select(field => field.GetValue(message));
@@ -60,6 +81,26 @@ namespace WeArt.Messages
             }
         }
 
+        private string SerializeJsonMessage(ReflectionData reflectionData, WeArtJsonMessage jsonMessage)
+        {
+            JsonMessageTemplate json = new JsonMessageTemplate
+            {
+                Type = reflectionData.Id,
+                Timestamp = jsonMessage.Timestamp,
+                Data = JToken.FromObject(jsonMessage),
+            };
+            DefaultContractResolver jsonContract = new DefaultContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy()
+            };
+            JsonSerializerSettings jsonSettings = new JsonSerializerSettings
+            {
+                ContractResolver = jsonContract,
+                Formatting = Formatting.None,
+            };
+            return JsonConvert.SerializeObject(json, jsonSettings);
+        }
+
         public override bool Deserialize(string data, out IWeArtMessage message)
         {
             try
@@ -73,7 +114,7 @@ namespace WeArt.Messages
 
                 if (message is IWeArtMessageCustomSerialization deserializableMessage)
                     return deserializableMessage.Deserialize(split);
-                
+
                 for (int i = 1; i < split.Length; i++)
                 {
                     var field = reflectionData.Fields[i - 1];
@@ -82,10 +123,30 @@ namespace WeArt.Messages
                 }
                 return true;
             }
+            catch (MessageTypeNotFound)
+            {
+                // Try with json
+                message = DeserializeJsonMessage(data);
+                return message != null;
+            }
             catch (Exception)
             {
                 message = null;
                 return false;
+            }
+        }
+
+        private IWeArtMessage DeserializeJsonMessage(string data)
+        {
+            try
+            {
+                JsonMessageTemplate json = JsonConvert.DeserializeObject<JsonMessageTemplate>(data);
+                ReflectionData reflectionData = ReflectionData.GetFrom(json.Type);
+                return (IWeArtMessage)json.Data.ToObject(reflectionData.Type) ?? null;
+            }
+            catch (MessageTypeNotFound)
+            {
+                return null;
             }
         }
 
@@ -121,6 +182,8 @@ namespace WeArt.Messages
 
             return data;
         }
+
+        internal class MessageTypeNotFound : Exception { }
 
 
         private struct ReflectionData
@@ -159,13 +222,29 @@ namespace WeArt.Messages
                     var messageType = typeof(WeArtMessageCustomSerializer).Assembly.GetTypes()
                         .Select(type => (type, attribute: type.GetCustomAttribute<WeArtMiddlewareMessageIDAttribute>()))
                         .Where(pair => pair.attribute != null && pair.attribute.ID == messageID)
-                        .FirstOrDefault().type;
+                        .FirstOrDefault().type ?? throw new MessageTypeNotFound();
 
                     reflectionData = new ReflectionData(messageID, messageType);
                     _cache[messageID] = reflectionData;
                 }
                 return reflectionData;
             }
+        }
+    }
+
+    public class MillisecondsEpochConverter : DateTimeConverterBase
+    {
+        private static readonly DateTime _epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            writer.WriteRawValue(((long)((DateTime)value - _epoch).TotalMilliseconds).ToString());
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (reader.Value == null) { return null; }
+            return _epoch.AddMilliseconds((long)reader.Value);
         }
     }
 }

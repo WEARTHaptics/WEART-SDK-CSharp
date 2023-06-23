@@ -3,6 +3,7 @@
 *	https://www.weart.it/
 */
 
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using WeArt.Core;
@@ -26,6 +27,11 @@ namespace WeArt.Messages
         bool Deserialize(string[] fields);
     }
 
+    public class WeArtJsonMessage : IWeArtMessage
+    {
+        [JsonIgnore]
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+    }
 
     /// <summary>
     /// Message that requests the middleware to start and to turn on the hardware
