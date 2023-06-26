@@ -13,7 +13,7 @@ namespace WeArt.Components
     /// </summary>
     public class WeArtRawSensorsDataTrackingObject
     {
-        public delegate void dRawSensorDataEvent(SensorsData sensorsData);
+        public delegate void dRawSensorDataEvent(SensorData sensorsData);
 
         public event dRawSensorDataEvent DataReceived;
 
@@ -40,9 +40,7 @@ namespace WeArt.Components
             set => _actuationPoint = value;
         }
 
-
-
-        public SensorsData LastSample { get; private set; }
+        public SensorData LastSample { get; private set; }
 
         public WeArtRawSensorsDataTrackingObject(WeArtClient client, HandSide handSide = HandSide.Right, ActuationPoint actuationPoint = ActuationPoint.Index)
         {
@@ -53,12 +51,12 @@ namespace WeArt.Components
             _client.OnMessage += OnMessageReceived;
             HandSide = handSide;
             ActuationPoint = actuationPoint;
-            LastSample = new SensorsData { };
+            LastSample = new SensorData { };
         }
 
         internal void OnConnectionChanged(bool connected)
         {
-            LastSample = new SensorsData { };
+            LastSample = new SensorData { };
         }
 
         private void OnMessageReceived(WeArtClient.MessageType type, IWeArtMessage message)
@@ -71,7 +69,7 @@ namespace WeArt.Components
                 if (rawDataMessage.HandSide != _handSide)
                     return;
 
-                SensorsData newSample;
+                SensorData newSample;
                 switch (ActuationPoint)
                 {
                     case ActuationPoint.Thumb: newSample = rawDataMessage.Thumb; break;

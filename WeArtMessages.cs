@@ -365,9 +365,9 @@ namespace WeArt.Messages
     public class RawDataMessage : WeArtJsonMessage
     {
         public HandSide HandSide { get; set; }
-        public SensorsData Index { get; set; }
-        public SensorsData Thumb { get; set; }
-        public SensorsData Middle { get; set; }
-        public SensorsData Palm { get; set; }
+        public SensorData Index { get; set; }
+        public SensorData Thumb { get; set; }
+        public SensorData Middle { get; set; }
+        public SensorData Palm { get; set; }
     }
 }

@@ -194,10 +194,11 @@ namespace WeArt.Core
         public int Distance { get; set; }
     }
 
-    public class SensorsData
+    public class SensorData
     {
         [JsonIgnore]
         public DateTime Timestamp { get; set; }
+
         public Accelerometer Accelerometer { get; set; }
         public Gyroscope Gyroscope { get; set; }
         public TimeOfFlight TimeOfFlight { get; set; }
