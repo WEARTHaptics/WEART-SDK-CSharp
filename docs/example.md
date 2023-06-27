@@ -9,6 +9,9 @@ The application is implemented as a Universal Windows app in C#. To execute the 
 ## SDK Integration 
 
 The SDK is integrated in the example application by copying the sdk source and header files into the ```WEART_API_Integration/WEART_SDK``` directory, and adding them to the visual studio project.
+
+In addition, the application project includes the nuget package "Newtonsoft.Json" version 13.0.3, as it is a required dependency of the SDK.
+
 Most of the application code can be found in the ```WEART_API_Integration/MainPage.xaml.cs``` file.
 
 ### Connection to Middleware
@@ -187,5 +190,40 @@ private void AddEffectSample1_Click(object sender, RoutedEventArgs e)
 	// add effect if needed, to thimble 
 	if (_hapticObject.ActiveEffect == null)
 		_hapticObject.AddEffect(_effect);
+}
+~~~~~~~~~~~~~
+
+### Raw Sensors Data tracking
+
+In the right section of the window, the application displays the raw data of the different sensors aboard the TouchDIVER.
+In particular, it's possible to choose the hand and actuation point from which to visualize:
+* Timestamp of the last sample received
+* Accelerometer data (on the x,y,z axis)
+* Gyroscope data (on the x,y,z axis)
+* Time of Flight distance (in mm)
+
+To start receiving raw data, click on the "Start Raw Data" button, and to stop click on the "Stop Raw Data" button.
+
+When it's loaded, the application creates a WeArt.Components.WeArtRawSensorsDataTrackingObject for each pair of (HandSide, ActuationPoint).
+When one of the combo boxes values changes, the application adds a callback to the corresponding tracking object.
+The callback is responsible for displaying the received sample:
+
+~~~~~~~~~~~~~{.cs}
+private void RenderRawDataAsync(SensorData data)
+{
+	Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+	{
+		Acc_X.Text = data.Accelerometer.X.ToString();
+		Acc_Y.Text = data.Accelerometer.Y.ToString();
+		Acc_Y.Text = data.Accelerometer.Z.ToString();
+
+		Gyro_X.Text = data.Gyroscope.X.ToString();
+		Gyro_Y.Text = data.Gyroscope.Y.ToString();
+		Gyro_Y.Text = data.Gyroscope.Z.ToString();
+
+		TimeOfFlight.Text = data.TimeOfFlight.Distance.ToString();
+
+		LastSampleTime.Text = data.Timestamp.ToString("yyyy/MM/dd HH:mm:ss.fff");
+	});
 }
 ~~~~~~~~~~~~~
