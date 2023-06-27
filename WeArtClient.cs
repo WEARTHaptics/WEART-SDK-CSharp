@@ -257,8 +257,8 @@ namespace WeArt.Core
                         messages = new IWeArtMessage[split.Length];
                         for (int i = 0; i < messages.Length; i++)
                         {
-                            _messageSerializer.Deserialize(split[i], out messages[i]);
-                            ForwardMessage(split[i], messages[i]);
+                            if(_messageSerializer.Deserialize(split[i], out messages[i]))
+                                ForwardMessage(split[i], messages[i]);
                         }
                         return true;
                     }

@@ -59,7 +59,7 @@ namespace WeArt.Messages
 
                 if (message is WeArtJsonMessage jsonMessage)
                 {
-                    data = SerializeJsonMessage(reflectionData, jsonMessage);   
+                    data = SerializeJsonMessage(reflectionData, jsonMessage);
                     return true;
                 }
 
@@ -105,35 +105,52 @@ namespace WeArt.Messages
         {
             try
             {
-                string[] split = data.Split(separator);
-                var messageID = split[0];
+                if (IsJsonMessage(data))
+                    message = DeserializeJsonMessage(data);
+                else
+                    message = DeserializeCsvMessage(data);
+            }
+            catch (Exception)
+            {
+                message = null;
+            }
+            return message != null;
+        }
 
-                var reflectionData = ReflectionData.GetFrom(messageID);
+        private bool IsJsonMessage(string data)
+        {
+            // Heuristic to see fast (without regex or parsing) if the data we received could be a json message
+            // Old protocol messages does not start with "[" or "{" so it should be ok
+            if (string.IsNullOrWhiteSpace(data)) return false;
+            data = data.Trim();
 
-                message = (IWeArtMessage)Activator.CreateInstance(reflectionData.Type);
+            bool isObject = data.StartsWith("{") && data.EndsWith("}");
+            bool isArray = data.StartsWith("[") && data.EndsWith("]");
+            return isObject || isArray;
+        }
 
-                if (message is IWeArtMessageCustomSerialization deserializableMessage)
-                    return deserializableMessage.Deserialize(split);
+        private IWeArtMessage DeserializeCsvMessage(string data)
+        {
+            string[] split = data.Split(separator);
+            var messageID = split[0];
 
+            var reflectionData = ReflectionData.GetFrom(messageID);
+            var message = (IWeArtMessage)Activator.CreateInstance(reflectionData.Type);
+
+            if (message is IWeArtMessageCustomSerialization deserializableMessage)
+            {
+                deserializableMessage.Deserialize(split);
+            }
+            else
+            {
                 for (int i = 1; i < split.Length; i++)
                 {
                     var field = reflectionData.Fields[i - 1];
                     var value = Deserialize(split[i], field.FieldType);
                     field.SetValue(message, value);
                 }
-                return true;
             }
-            catch (MessageTypeNotFound)
-            {
-                // Try with json
-                message = DeserializeJsonMessage(data);
-                return message != null;
-            }
-            catch (Exception)
-            {
-                message = null;
-                return false;
-            }
+            return message;
         }
 
         private IWeArtMessage DeserializeJsonMessage(string data)
@@ -142,6 +159,16 @@ namespace WeArt.Messages
             {
                 JsonMessageTemplate json = JsonConvert.DeserializeObject<JsonMessageTemplate>(data);
                 ReflectionData reflectionData = ReflectionData.GetFrom(json.Type);
+
+                // Message without parameters
+                if (json.Data is null)
+                {
+                    var message = (WeArtJsonMessage)Activator.CreateInstance(reflectionData.Type);
+                    message.Timestamp = json.Timestamp;
+                    return message;
+                }
+
+                // Message with parameters
                 return (IWeArtMessage)json.Data.ToObject(reflectionData.Type) ?? null;
             }
             catch (MessageTypeNotFound)
