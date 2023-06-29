@@ -20,7 +20,10 @@ For the documentation, go [here](https://weart.it/docs/sdkcsharp/)
 
 ## Changelog
 
-### Version 1.1 (latest)
+### Version 1.1.1 (latest)
+* Fix connection issue to middleware while offline
+
+### Version 1.1
 * Add calibration procedure start/stop and listener
 * Add new default tracking message and values for closure
 * Add basic effect class for haptic feedback

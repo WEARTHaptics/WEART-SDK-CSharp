@@ -220,8 +220,10 @@ namespace WeArt.Core
     /// </summary>
     public static class WeArtConstants
     {
+        public const string ipLocalHost = "127.0.0.1";
+
         public const string WEART_SDK_TYPE = "SdkLLCSH";
-        public const string WEART_SDK_VERSION = "1.0.0";
+        public const string WEART_SDK_VERSION = "1.1.1";
 
         public const float defaultTemperature = 0.5f;
         public const float minTemperature = 0f;
