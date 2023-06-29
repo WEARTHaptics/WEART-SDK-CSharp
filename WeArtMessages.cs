@@ -4,6 +4,7 @@
 */
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using WeArt.Core;
@@ -369,5 +370,92 @@ namespace WeArt.Messages
         public SensorData Thumb { get; set; }
         public SensorData Middle { get; set; }
         public SensorData Palm { get; set; }
+    }
+
+    [WeArtMiddlewareMessageID("MW_GET_STATUS")]
+    public class GetMiddlewareStatusMessage : WeArtJsonMessage { }
+
+
+    /// <summary>
+    /// Defines the STATUS.
+    /// </summary>
+    public enum MiddlewareStatus
+    {
+        DISCONNECTED,
+        IDLE,
+        STARTING,
+        RUNNING,
+        STOPPING,
+        UPLOADING_TEXTURES,
+        CONNECTING_DEVICE,
+        CALIBRATION,
+    };
+
+    [WeArtMiddlewareMessageID("MW_STATUS")]
+    public class MiddlewareStatusMessage : WeArtJsonMessage
+    {
+        [JsonConverter(typeof(StringEnumConverter))]
+        public MiddlewareStatus Status { get; set; }
+
+        public string Version { get; set; }
+
+        public int StatusCode { get; set; }
+
+        public string ErrorDesc { get; set; }
+
+        public bool ActuationsEnabled { get; set; }
+
+        public List<MiddlewareConnectedDevice> ConnectedDevices { get; set; }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+    }
+
+    public struct MiddlewareConnectedDevice
+    {
+        public string MacAddress { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public HandSide HandSide { get; set; }
+    }
+
+    [WeArtMiddlewareMessageID("DEVICES_GET_STATUS")]
+    public class GetDevicesStatusMessage : WeArtJsonMessage { }
+
+    [WeArtMiddlewareMessageID("DEVICES_STATUS")]
+    public class DevicesStatusMessage : WeArtJsonMessage
+    {
+        public List<DeviceStatus> Devices { get; set; }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+    }
+
+    public struct DeviceStatus
+    {
+        public string MacAddress { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public HandSide HandSide { get; set; }
+
+        public int BatteryLevel { get; set; }
+
+        public List<ThimbleStatus> Thimbles { get; set; }
+    }
+
+    public struct ThimbleStatus
+    {
+        [JsonConverter(typeof(StringEnumConverter))]
+        public ActuationPoint Id { get; set; }
+
+        public bool Connected { get; set; }
+
+        public int StatusCode { get; set; }
+
+        public string ErrorDesc { get; set; }
     }
 }
