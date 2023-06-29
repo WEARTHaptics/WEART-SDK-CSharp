@@ -3,6 +3,7 @@
 *	https://www.weart.it/
 */
 
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using WeArt.Core;
@@ -26,6 +27,11 @@ namespace WeArt.Messages
         bool Deserialize(string[] fields);
     }
 
+    public class WeArtJsonMessage : IWeArtMessage
+    {
+        [JsonIgnore]
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+    }
 
     /// <summary>
     /// Message that requests the middleware to start and to turn on the hardware
@@ -346,5 +352,22 @@ namespace WeArt.Messages
 
             return fields;
         }
+    }
+
+
+    [WeArtMiddlewareMessageID("RAW_DATA_ON")]
+    public class RawDataOnMessage : WeArtJsonMessage { }
+
+    [WeArtMiddlewareMessageID("RAW_DATA_OFF")]
+    public class RawDataOffMessage : WeArtJsonMessage { }
+
+    [WeArtMiddlewareMessageID("RAW_DATA")]
+    public class RawDataMessage : WeArtJsonMessage
+    {
+        public HandSide HandSide { get; set; }
+        public SensorData Index { get; set; }
+        public SensorData Thumb { get; set; }
+        public SensorData Middle { get; set; }
+        public SensorData Palm { get; set; }
     }
 }

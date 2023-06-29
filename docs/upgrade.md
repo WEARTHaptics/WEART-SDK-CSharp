@@ -9,11 +9,20 @@ On other systems (e.g. cmake) the procedure might be different.
 
 ## Code Migration
 
-The new SDK version is mostly compatible with the older version.
+The new SDK version is mostly compatible with the older versions.
 The only breaking change introduced relates to the WeArtTexture class, in which the ```VelocityX``` and ```VelocityY``` params has been removed because are not used anymore. The ```VelocityZ``` parameter has been renamed to ```Velocity```, and represents the speed at which the texture vibration is played by the thimble.
 
+## Dependencies
+The new SDK version has the following dependencies:
+* Newtonsoft.Json version >= 13.0.0 (currently tested with version 13.0.3)
+
+The dependencies can be found and installed by using the nuget package manager.
+
 ## Changelog
-### Version 1.1 (latest)
+### Version 1.2 (latest)
+* Add raw sensors data tracking object
+
+### Version 1.1
 * Add calibration procedure start/stop and listener
 * Add new default tracking message and values for closure
 * Add basic effect class for haptic feedback
