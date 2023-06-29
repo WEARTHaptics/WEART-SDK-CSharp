@@ -190,6 +190,8 @@ namespace WeArt.Core
     /// </summary>
     public static class WeArtConstants
     {
+        public const string ipLocalHost = "127.0.0.1";
+
         public const string WEART_SDK_TYPE = "SdkLLCSH";
         public const string WEART_SDK_VERSION = "1.0.0";
 

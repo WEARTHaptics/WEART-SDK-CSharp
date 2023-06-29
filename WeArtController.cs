@@ -39,7 +39,7 @@ namespace WeArt.Components
                 {
                     _weArtClient = new WeArtClient
                     {
-                        IpAddress = WeArtNetwork.LocalIPAddress,
+                        IpAddress = WeArtConstants.ipLocalHost,
                         Port = _clientPort,
                     };
                     _weArtClient.OnConnectionStatusChanged += OnConnectionChanged;
