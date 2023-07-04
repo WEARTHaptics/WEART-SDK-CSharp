@@ -444,6 +444,8 @@ namespace WeArt.Messages
 
         public int BatteryLevel { get; set; }
 
+        public bool Charging { get; set; }
+
         public List<ThimbleStatus> Thimbles { get; set; }
     }
 

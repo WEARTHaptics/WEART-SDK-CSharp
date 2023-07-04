@@ -153,10 +153,7 @@ namespace WeArt.Core
 
                         // Send the request to start
                         SendMessage(new StartFromClientMessage { TrackingType = trackingType });
-
-                        // Wait for the middleware to start the session (or throw TimeoutException otherwise)
                         SendMessage(new GetMiddlewareStatusMessage());
-                        await WaitForMessage((MiddlewareStatusMessage message) => message.Status == MiddlewareStatus.RUNNING, 5000);
                     }
                     catch (Exception e)
                     {
@@ -188,19 +185,6 @@ namespace WeArt.Core
         public async Task<bool> Stop()
         {
             SendMessage(new StopFromClientMessage());
-
-            try
-            {
-                await WaitForMessage((MiddlewareStatusMessage msg) =>
-                        msg.Status != MiddlewareStatus.RUNNING && msg.Status != MiddlewareStatus.STOPPING,
-                    5000
-                    );
-            }
-            catch (TimeoutException)
-            {
-                return false;
-            }
-
             StopConnection();
             return true;
         }
@@ -415,6 +399,15 @@ namespace WeArt.Core
                 else
                     OnCalibrationResultFail?.Invoke(calibrationResult.HandSide);
             }
+            else if (message is MiddlewareStatusMessage mwStatusMessage)
+            {
+                OnMiddlewareStatusMessage?.Invoke(mwStatusMessage);
+            }
+            else if (message is DevicesStatusMessage devicesStatusMessage)
+            {
+                OnDevicesStatusMessage?.Invoke(devicesStatusMessage);
+            }
+
         }
 
         /// <summary>
