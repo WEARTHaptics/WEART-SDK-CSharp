@@ -228,26 +228,27 @@ namespace WeArt.Core
         }
 
         /// <summary>
-        /// Asks the middleware to send an updated status message
+        /// Send the given message to the middleware and waits for a given type of response within the given timeout
         /// </summary>
-        public void AskStatusUpdate()
-        {
-            SendMessage(new GetMiddlewareStatusMessage());
-        }
-
-        /// <summary>
-        /// Asks the middleware to send an updated message on the status of connected devices
-        /// </summary>
-        public void AskDevicesStatusUpdate()
-        {
-            SendMessage(new GetDevicesStatusMessage());
-        }
-
+        /// <typeparam name="T">Type of the message to wait for</typeparam>
+        /// <param name="message">Message to send before waiting</param>
+        /// <param name="timeoutMs">Time to wait for the given message type</param>
+        /// <returns>The received response message</returns>
+        /// <exception cref="TimeoutException">Thrown when the correct message is not received withih the given timeout</exception>
         public async Task<T> SendAndWaitForMessage<T>(IWeArtMessage message, int timeoutMs)
         {
             return await SendAndWaitForMessage<T>(message, (T msg) => true, timeoutMs);
         }
 
+        /// <summary>
+        /// Send the given message to the middleware and waits for a response (with a given condition applied) within the given timeout
+        /// </summary>
+        /// <typeparam name="T">Type of the message to wait for</typeparam>
+        /// <param name="message">Message to send before waiting</param>
+        /// <param name="predicate">The condition the received message must pass to be considered</param>
+        /// <param name="timeoutMs">Time to wait for the given message type</param>
+        /// <returns>The received response message</returns>
+        /// <exception cref="TimeoutException">Thrown when the correct message is not received withih the given timeout</exception>
         public async Task<T> SendAndWaitForMessage<T>(IWeArtMessage message, Func<T, bool> predicate, int timeoutMs)
         {
             // Write Pack and wait for responses (of a certain type) with a given timeout

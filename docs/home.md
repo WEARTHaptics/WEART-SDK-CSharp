@@ -208,3 +208,53 @@ received from the TouchDIVER.
 		// process the sensor data sample
 	};
 ~~~~~~~~~~~~~
+
+## Middleware and Devices status tracking
+
+The SDK allows to track and receives updates about the middleware and the connected devices status.
+
+In particular, the information is available through a callback in the WeArtClient object
+~~~~~~~~~~~~~{.cpp}
+
+weArtClient.OnMiddlewareStatusMessage += (MiddlewareStatusMessage message) => {
+	... use received status message ...
+};
+
+weArtClient.OnDevicesStatusMessage += (DevicesStatusMessage message) => {
+	... use received devices status message ...
+};
+~~~~~~~~~~~~~
+
+The middleware status callback will receive the MiddlewareStatusMessage object, which includes:
+* Middleware version
+* Middleware status (MiddlewareStatus)
+* List of the connected devices (mac address and hand side)
+* Status code and description  
+* Whether actuations are enabled or not
+
+The devices status callback allow to receive more detailed informations about the currently connected TouchDIVERs.
+In particular, for each connected device:
+* Mac Address
+* Assigned HandSide
+* Overall battery level
+* Status of each thimble (actuation point, connected or not, status code etc..)
+
+### Status Codes
+The SDK client allows to get the latest middleware status through a callback
+The Middleware Status message includes the latest status code sent by the middleware while performing
+its operations.
+
+The current status codes (along with their description) are:
+
+| Status Code |   | Description |
+|---|---|---|
+| 0 | OK | Ok |
+| 100 | START_GENERIC_ERROR | Generic error while starting session |
+| 101 | CONNECT_THIMBLE | Unable to start, connect at least one thimble and retry |
+| 102 | WRONG_THIMBLES | Unable to start, connect the right thimbles matched to the bracelet and retry |
+| 103 | BATTERY_TOO_LOW | Battery is too low, cannot start |
+| 104 | RUNNING_DEVICE_CHARGING | Can't start while the devices are connected to the power supply |
+| 200 | CONSECUTIVE_TRACKING_ERRORS | Too many consecutive running sensor errors, stopping session |
+| 300 | STOP_GENERIC_ERROR | Generic error occurred while stopping session |
+
+@note The description of each status code might change between different Middleware versions, use the status code to check instead of the description.

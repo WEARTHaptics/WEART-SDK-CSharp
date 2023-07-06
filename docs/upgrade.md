@@ -23,6 +23,8 @@ The dependencies can be found and installed by using the nuget package manager.
 
 ### Version 1.2 (latest)
 * Add raw sensors data tracking object
+* Add middleware status messages and event
+* Add connected devices status and event
 
 ### Version 1.1.1
 * Fix connection issue to middleware while offline
