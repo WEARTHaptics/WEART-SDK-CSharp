@@ -6,6 +6,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 using System.Threading.Tasks;
 using WeArt.Messages;
@@ -153,22 +154,26 @@ namespace WeArt.Core
 
                         // Send the request to start
                         SendMessage(new StartFromClientMessage { TrackingType = trackingType });
+
+                        await Task.Delay(1000);
+
                         SendMessage(new GetMiddlewareStatusMessage());
+                        SendMessage(new GetDevicesStatusMessage());
+
+                        // Message receiving loop
+                        while (!_cancellation.IsCancellationRequested)
+                        {
+                            if (ReceiveMessages(out var messages))
+                                foreach (var message in messages)
+                                    OnMessageReceived(message);
+                        }
                     }
                     catch (Exception e)
                     {
                         // Error handling and connection stop
                         OnError?.Invoke(ErrorType.ConnectionError, e);
                         StopConnection();
-                    }
-
-                    // Message receiving loop
-                    while (!_cancellation.IsCancellationRequested)
-                    {
-                        if (ReceiveMessages(out var messages))
-                            foreach (var message in messages)
-                                OnMessageReceived(message);
-                    }
+                    }   
                 }
 
                 // Connection stop
@@ -185,6 +190,7 @@ namespace WeArt.Core
         public async Task<bool> Stop()
         {
             SendMessage(new StopFromClientMessage());
+            await SendAndWaitForMessage(new GetMiddlewareStatusMessage(), (MiddlewareStatusMessage msg) => msg.Status == MiddlewareStatus.IDLE, 3000);
             StopConnection();
             return true;
         }
@@ -235,6 +241,52 @@ namespace WeArt.Core
         public void AskDevicesStatusUpdate()
         {
             SendMessage(new GetDevicesStatusMessage());
+        }
+
+        public async Task<T> SendAndWaitForMessage<T>(IWeArtMessage message, int timeoutMs)
+        {
+            return await SendAndWaitForMessage<T>(message, (T msg) => true, timeoutMs);
+        }
+
+        public async Task<T> SendAndWaitForMessage<T>(IWeArtMessage message, Func<T, bool> predicate, int timeoutMs)
+        {
+            // Write Pack and wait for responses (of a certain type) with a given timeout
+            CancellationTokenSource source = new CancellationTokenSource();
+
+            T receivedMessage = default(T);
+            Action<MessageType, IWeArtMessage> onMessageReceived = (MessageType type, IWeArtMessage msg) =>
+            {
+                if (type != MessageType.MessageReceived) return;
+                if (msg is T castedMessage)
+                {
+                    if (predicate(castedMessage))
+                    {
+                        receivedMessage = castedMessage;
+                        source.Cancel();
+                    }
+                }
+            };
+
+            OnMessage += onMessageReceived;
+
+            SendMessage(message);
+
+            // Wait to receive message
+            try
+            {
+                await Task.Delay(timeoutMs, source.Token);
+                throw new TimeoutException();
+            }
+            catch (OperationCanceledException)
+            {
+                // Canceled operation means we received the correct message
+            }
+            finally
+            {
+                OnMessage -= onMessageReceived;
+            }
+
+            return receivedMessage;
         }
 
         /// <summary>

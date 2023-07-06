@@ -395,17 +395,17 @@ namespace WeArt.Messages
     public class MiddlewareStatusMessage : WeArtJsonMessage
     {
         [JsonConverter(typeof(StringEnumConverter))]
-        public MiddlewareStatus Status { get; set; }
+        public MiddlewareStatus Status { get; set; } = MiddlewareStatus.DISCONNECTED;
 
-        public string Version { get; set; }
+        public string Version { get; set; } = "";
 
-        public int StatusCode { get; set; }
+        public int StatusCode { get; set; } = 0;
 
-        public string ErrorDesc { get; set; }
+        public string ErrorDesc { get; set; } = "";
 
-        public bool ActuationsEnabled { get; set; }
+        public bool ActuationsEnabled { get; set; } = false;
 
-        public List<MiddlewareConnectedDevice> ConnectedDevices { get; set; }
+        public List<MiddlewareConnectedDevice> ConnectedDevices { get; set; } = new List<MiddlewareConnectedDevice>();
 
         public override string ToString()
         {
