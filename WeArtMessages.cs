@@ -435,29 +435,62 @@ namespace WeArt.Messages
         }
     }
 
+    /// <summary>
+    /// Status and informations about a single connected device
+    /// </summary>
     public struct DeviceStatus
     {
+        /// <summary>
+        /// (BLE) Mac address of the device
+        /// </summary>
         public string MacAddress { get; set; }
 
+        /// <summary>
+        /// Hand side to which the device is assigned
+        /// </summary>
         [JsonConverter(typeof(StringEnumConverter))]
         public HandSide HandSide { get; set; }
 
+        /// <summary>
+        /// Current battery charge level (percentage, 0-100)
+        /// </summary>
         public int BatteryLevel { get; set; }
 
+        /// <summary>
+        /// Tells whether the device is charging or not
+        /// </summary>
         public bool Charging { get; set; }
 
+        /// <summary>
+        /// Status of all the device thimbles
+        /// </summary>
         public List<ThimbleStatus> Thimbles { get; set; }
     }
 
+    /// <summary>
+    /// Status of a single thimble
+    /// </summary>
     public struct ThimbleStatus
     {
+        /// <summary>
+        /// Actuation Point to which the thimble is assigned
+        /// </summary>
         [JsonConverter(typeof(StringEnumConverter))]
         public ActuationPoint Id { get; set; }
 
+        /// <summary>
+        /// Tells whether the thimble is connected or not to the device
+        /// </summary>
         public bool Connected { get; set; }
 
+        /// <summary>
+        /// Current thimble status code (0 = OK)
+        /// </summary>
         public int StatusCode { get; set; }
 
+        /// <summary>
+        /// Description of the thimble status code
+        /// </summary>
         public string ErrorDesc { get; set; }
     }
 }

@@ -214,30 +214,22 @@ received from the TouchDIVER.
 The SDK allows to track and receives updates about the middleware and the connected devices status.
 
 In particular, the information is available through a callback in the WeArtClient object
-~~~~~~~~~~~~~{.cpp}
-
-weArtClient.OnMiddlewareStatusMessage += (MiddlewareStatusMessage message) => {
-	... use received status message ...
-};
-
-weArtClient.OnDevicesStatusMessage += (DevicesStatusMessage message) => {
-	... use received devices status message ...
+~~~~~~~~~~~~~{.cs}
+weArtClient.OnMiddlewareStatusUpdate += (MiddlewareStatusUpdate message) => {
+	... use received middleware status ...
 };
 ~~~~~~~~~~~~~
 
-The middleware status callback will receive the MiddlewareStatusMessage object, which includes:
+The middleware status callback will receive the MiddlewareStatusUpdate object, which includes:
 * Middleware version
-* Middleware status (MiddlewareStatus)
-* List of the connected devices (mac address and hand side)
+* Middleware status
 * Status code and description  
 * Whether actuations are enabled or not
-
-The devices status callback allow to receive more detailed informations about the currently connected TouchDIVERs.
-In particular, for each connected device:
-* Mac Address
-* Assigned HandSide
-* Overall battery level
-* Status of each thimble (actuation point, connected or not, status code etc..)
+* List of the connected devices and their status
+	* Mac Address
+	* Assigned HandSide
+	* Overall battery level
+	* Status of each thimble (actuation point, connected or not, status code etc..)
 
 ### Status Codes
 The SDK client allows to get the latest middleware status through a callback
