@@ -4,9 +4,9 @@
 */
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 using System.Threading.Tasks;
 using WeArt.Messages;
@@ -53,6 +53,7 @@ namespace WeArt.Core
         private readonly byte[] _messageReceivedBuffer = new byte[1024];
         private string _trailingText = string.Empty;
 
+        private MiddlewareStatusUpdate _lastStatus = new MiddlewareStatusUpdate();
 
         /// <summary>
         /// Called when the connection has been established (true) and when it is closed (false)
@@ -99,12 +100,7 @@ namespace WeArt.Core
         /// <summary>
         /// Called when a status update is received from the middleware
         /// </summary>
-        public event Action<MiddlewareStatusMessage> OnMiddlewareStatusMessage;
-
-        /// <summary>
-        /// Called when a status update about the connected devices is received
-        /// </summary>
-        public event Action<DevicesStatusMessage> OnDevicesStatusMessage;
+        public event Action<MiddlewareStatusUpdate> OnMiddlewareStatusUpdate;
 
         /// <summary>
         /// True if a connection to the middleware has been established
@@ -173,12 +169,15 @@ namespace WeArt.Core
                         // Error handling and connection stop
                         OnError?.Invoke(ErrorType.ConnectionError, e);
                         StopConnection();
-                    }   
+                    }
                 }
 
-                // Connection stop
+                // Connection stop and reset status
                 StopConnection();
                 _mainThreadContext.Post(state => OnConnectionStatusChanged?.Invoke(false), this);
+                
+                _lastStatus = new MiddlewareStatusUpdate();
+                OnMiddlewareStatusUpdate?.Invoke(_lastStatus);
 
             }, _cancellation.Token);
         }
@@ -454,11 +453,21 @@ namespace WeArt.Core
             }
             else if (message is MiddlewareStatusMessage mwStatusMessage)
             {
-                OnMiddlewareStatusMessage?.Invoke(mwStatusMessage);
+                _lastStatus.Timestamp = mwStatusMessage.Timestamp;
+                _lastStatus.Status = mwStatusMessage.Status;
+                _lastStatus.Version = mwStatusMessage.Version;
+                _lastStatus.StatusCode = mwStatusMessage.StatusCode;
+                _lastStatus.ErrorDesc = mwStatusMessage.ErrorDesc;
+                _lastStatus.ActuationsEnabled = mwStatusMessage.ActuationsEnabled;
+
+                OnMiddlewareStatusUpdate?.Invoke(_lastStatus);
             }
             else if (message is DevicesStatusMessage devicesStatusMessage)
             {
-                OnDevicesStatusMessage?.Invoke(devicesStatusMessage);
+                _lastStatus.Timestamp = devicesStatusMessage.Timestamp;
+                _lastStatus.Devices = devicesStatusMessage.Devices.ToList(); // Clone list
+
+                OnMiddlewareStatusUpdate?.Invoke(_lastStatus);
             }
 
         }

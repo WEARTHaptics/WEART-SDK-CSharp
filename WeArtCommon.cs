@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using WeArt.Messages;
 
 namespace WeArt.Core
 {
@@ -202,6 +203,47 @@ namespace WeArt.Core
         public Accelerometer Accelerometer { get; set; }
         public Gyroscope Gyroscope { get; set; }
         public TimeOfFlight TimeOfFlight { get; set; }
+    }
+
+    /// <summary>
+    /// Data structure containing the updated status received from the middleware
+    /// </summary>
+    public class MiddlewareStatusUpdate
+    {
+        /// <summary>
+        /// Timestamp of the last update
+        /// </summary>
+        public DateTime Timestamp { get; set; }
+
+        /// <summary>
+        /// Current Middleware status
+        /// </summary>
+        public MiddlewareStatus Status { get; set; } = MiddlewareStatus.DISCONNECTED;
+
+        /// <summary>
+        /// Current middleware version
+        /// </summary>
+        public string Version { get; set; } = "";
+
+        /// <summary>
+        /// Last status code received (0 = OK)
+        /// </summary>
+        public int StatusCode { get; set; } = 0;
+
+        /// <summary>
+        /// Description of the last status code received
+        /// </summary>
+        public string ErrorDesc { get; set; } = "";
+
+        /// <summary>
+        /// Tells whether the middleware will forward actuations to the devices or not
+        /// </summary>
+        public bool ActuationsEnabled { get; set; } = false;
+
+        /// <summary>
+        /// Status of the devices (TouchDIVERs) connected to the middleware
+        /// </summary>
+        public List<DeviceStatus> Devices { get; set; } = new List<DeviceStatus>();
     }
 
     public static class WeArtUtility
