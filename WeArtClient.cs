@@ -4,6 +4,7 @@
 */
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -52,6 +53,7 @@ namespace WeArt.Core
         private readonly byte[] _messageReceivedBuffer = new byte[1024];
         private string _trailingText = string.Empty;
 
+        private MiddlewareStatusUpdate _lastStatus = new MiddlewareStatusUpdate();
 
         /// <summary>
         /// Called when the connection has been established (true) and when it is closed (false)
@@ -96,6 +98,11 @@ namespace WeArt.Core
         public event Action<HandSide> OnCalibrationResultFail;
 
         /// <summary>
+        /// Called when a status update is received from the middleware
+        /// </summary>
+        public event Action<MiddlewareStatusUpdate> OnMiddlewareStatusUpdate;
+
+        /// <summary>
         /// True if a connection to the middleware has been established
         /// </summary>
         public bool IsConnected => _socket != null && _socket.Connected;
@@ -125,7 +132,7 @@ namespace WeArt.Core
         public Task Start(TrackingType trackingType = TrackingType.WEART_HAND)
         {
             _cancellation = new CancellationTokenSource();
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 // Connection loop
                 while (!_cancellation.IsCancellationRequested)
@@ -143,6 +150,19 @@ namespace WeArt.Core
 
                         // Send the request to start
                         SendMessage(new StartFromClientMessage { TrackingType = trackingType });
+
+                        await Task.Delay(1000);
+
+                        SendMessage(new GetMiddlewareStatusMessage());
+                        SendMessage(new GetDevicesStatusMessage());
+
+                        // Message receiving loop
+                        while (!_cancellation.IsCancellationRequested)
+                        {
+                            if (ReceiveMessages(out var messages))
+                                foreach (var message in messages)
+                                    OnMessageReceived(message);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -150,19 +170,14 @@ namespace WeArt.Core
                         OnError?.Invoke(ErrorType.ConnectionError, e);
                         StopConnection();
                     }
-
-                    // Message receiving loop
-                    while (!_cancellation.IsCancellationRequested)
-                    {
-                        if (ReceiveMessages(out var messages))
-                            foreach (var message in messages)
-                                OnMessageReceived(message);
-                    }
                 }
 
-                // Connection stop
+                // Connection stop and reset status
                 StopConnection();
                 _mainThreadContext.Post(state => OnConnectionStatusChanged?.Invoke(false), this);
+                
+                _lastStatus = new MiddlewareStatusUpdate();
+                OnMiddlewareStatusUpdate?.Invoke(_lastStatus);
 
             }, _cancellation.Token);
         }
@@ -170,10 +185,13 @@ namespace WeArt.Core
         /// <summary>
         /// Stops the middleware and the established connection
         /// </summary>
-        public void Stop()
+        /// <returns>True if the middleware was stopped correctly and the connection closed, false otherwise</returns>
+        public async Task<bool> Stop()
         {
             SendMessage(new StopFromClientMessage());
+            await SendAndWaitForMessage(new GetMiddlewareStatusMessage(), (MiddlewareStatusMessage msg) => msg.Status == MiddlewareStatus.IDLE, 3000);
             StopConnection();
+            return true;
         }
 
         /// <summary>
@@ -192,14 +210,142 @@ namespace WeArt.Core
             SendMessage(new StopCalibrationMessage());
         }
 
+        /// <summary>
+        /// Asks the middleware to start sending raw data events to the sdk
+        /// </summary>
         public void StartRawData()
         {
             SendMessage(new RawDataOnMessage());
         }
 
+        /// <summary>
+        /// Tells the middleware to stop sending raw data events
+        /// </summary>
         public void StopRawData()
         {
             SendMessage(new RawDataOffMessage());
+        }
+
+        /// <summary>
+        /// Send the given message to the middleware and waits for a given type of response within the given timeout
+        /// </summary>
+        /// <typeparam name="T">Type of the message to wait for</typeparam>
+        /// <param name="message">Message to send before waiting</param>
+        /// <param name="timeoutMs">Time to wait for the given message type</param>
+        /// <returns>The received response message</returns>
+        /// <exception cref="TimeoutException">Thrown when the correct message is not received withih the given timeout</exception>
+        public async Task<T> SendAndWaitForMessage<T>(IWeArtMessage message, int timeoutMs)
+        {
+            return await SendAndWaitForMessage<T>(message, (T msg) => true, timeoutMs);
+        }
+
+        /// <summary>
+        /// Send the given message to the middleware and waits for a response (with a given condition applied) within the given timeout
+        /// </summary>
+        /// <typeparam name="T">Type of the message to wait for</typeparam>
+        /// <param name="message">Message to send before waiting</param>
+        /// <param name="predicate">The condition the received message must pass to be considered</param>
+        /// <param name="timeoutMs">Time to wait for the given message type</param>
+        /// <returns>The received response message</returns>
+        /// <exception cref="TimeoutException">Thrown when the correct message is not received withih the given timeout</exception>
+        public async Task<T> SendAndWaitForMessage<T>(IWeArtMessage message, Func<T, bool> predicate, int timeoutMs)
+        {
+            // Write Pack and wait for responses (of a certain type) with a given timeout
+            CancellationTokenSource source = new CancellationTokenSource();
+
+            T receivedMessage = default(T);
+            Action<MessageType, IWeArtMessage> onMessageReceived = (MessageType type, IWeArtMessage msg) =>
+            {
+                if (type != MessageType.MessageReceived) return;
+                if (msg is T castedMessage)
+                {
+                    if (predicate(castedMessage))
+                    {
+                        receivedMessage = castedMessage;
+                        source.Cancel();
+                    }
+                }
+            };
+
+            OnMessage += onMessageReceived;
+
+            SendMessage(message);
+
+            // Wait to receive message
+            try
+            {
+                await Task.Delay(timeoutMs, source.Token);
+                throw new TimeoutException();
+            }
+            catch (OperationCanceledException)
+            {
+                // Canceled operation means we received the correct message
+            }
+            finally
+            {
+                OnMessage -= onMessageReceived;
+            }
+
+            return receivedMessage;
+        }
+
+        /// <summary>
+        /// Waits for any message with the given type for the given timeout
+        /// </summary>
+        /// <typeparam name="T">Type of the message to wait</typeparam>
+        /// <param name="timeoutMs">Timeout to wait for the correct message</param>
+        /// <returns>The received message</returns>
+        /// <exception cref="TimeoutException">Thrown when the correct message is not received withih the given timeout</exception>
+        public async Task<T> WaitForMessage<T>(int timeoutMs)
+        {
+            return await WaitForMessage<T>((T msg) => true, timeoutMs);
+        }
+
+        /// <summary>
+        /// Waits for any message with the given type and condition for the given timeout
+        /// </summary>
+        /// <typeparam name="T">Type of the message to wait</typeparam>
+        /// <param name="predicate">Condition that the message must fullfill to be considered ok</param>
+        /// <param name="timeoutMs">Timeout to wait for the correct message</param>
+        /// <returns>The received message</returns>
+        /// <exception cref="TimeoutException">Thrown when the correct message is not received withih the given timeout</exception>
+        public async Task<T> WaitForMessage<T>(Func<T, bool> predicate, int timeoutMs)
+        {
+            // Write Pack and wait for responses (of a certain type) with a given timeout
+            CancellationTokenSource source = new CancellationTokenSource();
+
+            T receivedMessage = default(T);
+            Action<MessageType, IWeArtMessage> onMessageReceived = (MessageType type, IWeArtMessage message) =>
+            {
+                if (type != MessageType.MessageReceived) return;
+                if (message is T castedMessage)
+                {
+                    if (predicate(castedMessage))
+                    {
+                        receivedMessage = castedMessage;
+                        source.Cancel();
+                    }
+                }
+            };
+
+            OnMessage += onMessageReceived;
+
+            // Wait to receive message
+            try
+            {
+                await Task.Delay(timeoutMs, source.Token);
+                throw new TimeoutException();
+            }
+            catch (OperationCanceledException)
+            {
+                // Canceled operation means we received the correct message
+            }
+            finally
+            {
+                OnMessage -= onMessageReceived;
+            }
+
+            return receivedMessage;
         }
 
         /// <summary>
@@ -257,7 +403,7 @@ namespace WeArt.Core
                         messages = new IWeArtMessage[split.Length];
                         for (int i = 0; i < messages.Length; i++)
                         {
-                            if(_messageSerializer.Deserialize(split[i], out messages[i]))
+                            if (_messageSerializer.Deserialize(split[i], out messages[i]))
                                 ForwardMessage(split[i], messages[i]);
                         }
                         return true;
@@ -305,6 +451,25 @@ namespace WeArt.Core
                 else
                     OnCalibrationResultFail?.Invoke(calibrationResult.HandSide);
             }
+            else if (message is MiddlewareStatusMessage mwStatusMessage)
+            {
+                _lastStatus.Timestamp = mwStatusMessage.Timestamp;
+                _lastStatus.Status = mwStatusMessage.Status;
+                _lastStatus.Version = mwStatusMessage.Version;
+                _lastStatus.StatusCode = mwStatusMessage.StatusCode;
+                _lastStatus.ErrorDesc = mwStatusMessage.ErrorDesc;
+                _lastStatus.ActuationsEnabled = mwStatusMessage.ActuationsEnabled;
+
+                OnMiddlewareStatusUpdate?.Invoke(_lastStatus);
+            }
+            else if (message is DevicesStatusMessage devicesStatusMessage)
+            {
+                _lastStatus.Timestamp = devicesStatusMessage.Timestamp;
+                _lastStatus.Devices = devicesStatusMessage.Devices.ToList(); // Clone list
+
+                OnMiddlewareStatusUpdate?.Invoke(_lastStatus);
+            }
+
         }
 
         /// <summary>

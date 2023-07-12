@@ -195,6 +195,8 @@ private void AddEffectSample1_Click(object sender, RoutedEventArgs e)
 
 ### Raw Sensors Data tracking
 
+![Raw Sensors Data Panel](./example_app/ExampleApp_RawData.png)
+
 In the right section of the window, the application displays the raw data of the different sensors aboard the TouchDIVER.
 In particular, it's possible to choose the hand and actuation point from which to visualize:
 * Timestamp of the last sample received
@@ -225,5 +227,93 @@ private void RenderRawDataAsync(SensorData data)
 
 		LastSampleTime.Text = data.Timestamp.ToString("yyyy/MM/dd HH:mm:ss.fff");
 	});
+}
+~~~~~~~~~~~~~
+
+### Middleware and connected devices status
+
+![Middleware/Devices Status Panel](./example_app/ExampleApp_MiddlewareStatus.png)
+
+In the leftmost section of the window, the application displays the middleware and the connected devices status, as sent by the middleware during the connection.
+
+To track and show the middleware and devices status, the example application uses the related callbacks on the WeArtClient object:
+~~~~~~~~~~~~~{.cs}
+_weartClient.OnMiddlewareStatusUpdate += UpdateUIBasedOnStatus;
+ _weartClient.OnMiddlewareStatusUpdate += UpdateDevicesStatus;
+~~~~~~~~~~~~~
+
+In this way, the UI is updated on every middleware and devices status change sent by the middleware.
+For the devices status, the example app uses a custom user control which receives the status of a device and shows it.
+
+~~~~~~~~~~~~~{.cs}
+// Update buttons and middleware status
+private void UpdateUIBasedOnStatus(MiddlewareStatusUpdate statusUpdate)
+{
+	if (statusUpdate is null)
+		return;
+
+	MiddlewareStatus status = statusUpdate.Status;
+	bool isRunning = status == MiddlewareStatus.RUNNING;
+
+	Color statusColor = MiddlewareStatusColor(status);
+	bool isStatusOk = statusUpdate.StatusCode == 0;
+
+	Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, (Windows.UI.Core.DispatchedHandler)(() =>
+	{
+		// Update buttons
+		StartClient.IsEnabled = status != MiddlewareStatus.RUNNING && status != MiddlewareStatus.STARTING;
+		StopClient.IsEnabled = isRunning;
+		StartCalibration.IsEnabled = status == MiddlewareStatus.RUNNING;
+
+		AddEffectSample1.IsEnabled = isRunning;
+		AddEffectSample2.IsEnabled = isRunning;
+		AddEffectSample3.IsEnabled = isRunning;
+		RemoveEffects.IsEnabled = isRunning;
+		ButtonStartRawData.IsEnabled = isRunning;
+		ButtonStopRawData.IsEnabled = isRunning;
+
+
+		// Update middleware status panel
+		MiddlewareStatus_Text.Text = status.ToString();
+		MiddlewareStatus_Text.Foreground = new SolidColorBrush(statusColor);
+
+		if(statusUpdate.Version != null)
+			MiddlewareVersion_Text.Text = statusUpdate.Version;
+
+		Brush statusCodeBrush = new SolidColorBrush(isStatusOk ? Colors.Green : Colors.Red);
+		MwStatusCode.Text = statusUpdate.StatusCode.ToString();
+		MwStatusCode.Foreground = statusCodeBrush;
+		MwStatusCodeDesc.Text = isStatusOk ? "OK" : (statusUpdate.ErrorDesc != null ? statusUpdate.ErrorDesc : "");
+		MwStatusCodeDesc.Foreground = statusCodeBrush;
+
+		ConnectedDevicesNum_Text.Text = statusUpdate.Devices.Count.ToString();
+
+		AddEffectSample1.IsEnabled = isRunning;
+		AddEffectSample2.IsEnabled = isRunning;
+		AddEffectSample3.IsEnabled = isRunning;
+		RemoveEffects.IsEnabled = isRunning;
+		ButtonStartRawData.IsEnabled = isRunning;
+		ButtonStopRawData.IsEnabled = isRunning;
+	}));
+}
+
+private void UpdateDevicesStatus(MiddlewareStatusUpdate statusUpdate)
+{
+	LeftHand.Connected = false;
+	RightHand.Connected = false;
+	foreach (DeviceStatus device in statusUpdate.Devices)
+	{
+		if(device.HandSide == HandSide.Left)
+		{
+			LeftHand.Device = device;
+			LeftHand.Connected = true;
+		} else
+		{
+			RightHand.Device = device;
+			RightHand.Connected = true;
+		}
+	}
+	LeftHand.Refresh();
+	RightHand.Refresh();
 }
 ~~~~~~~~~~~~~
