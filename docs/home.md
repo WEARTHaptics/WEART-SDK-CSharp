@@ -29,6 +29,7 @@ Import the main namespaces:
 ~~~~~~~~~~~~~{.cs}
 using WeArt.Core;
 using WeArt.Components;
+using WeArt.Messages;
 ~~~~~~~~~~~~~
 
 Create the WeArtClient and start the communication with the middleware:
