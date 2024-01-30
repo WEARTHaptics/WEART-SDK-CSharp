@@ -65,9 +65,12 @@ The SDK client allows to add callbacks to monitor the calibration procedure stat
 For example, to start the calibration and print "Success" or "Failed":
 
 ~~~~~~~~~~~~~{.cs}
+	weartClient.OnCalibrationStart += Console.WriteLine("Calibration start!");
 	weArtClient.OnCalibrationResultSuccess += (HandSide hand) => Console.WriteLine("Success!");
 	weArtClient.OnCalibrationResultFail += (HandSide hand) => Console.WriteLine("Failed");
+	weartClient.OnCalibrationFinish += (HandSide hand) => Console.WriteLine("Calibration finish!");
 
+	// Start calibraiton on demand
 	weArtClient.StartCalibration();
 ~~~~~~~~~~~~~
 
@@ -148,8 +151,6 @@ If an effect is not needed anymore, it can be removed from the haptic object wit
 ~~~~~~~~~~~~~{.cs}
 	hapticObject.RemoveEffect(touchEffect);
 ~~~~~~~~~~~~~
-
-@note When a new effect is added, the last effect applied is replaced by the new effect.
 
 ## Tracking
 
