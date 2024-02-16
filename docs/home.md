@@ -234,8 +234,7 @@ The middleware status callback will receive the MiddlewareStatusUpdate object, w
 	* Status of each thimble (actuation point, connected or not, status code etc..)
 
 ### Status Codes
-The SDK client allows to get the latest middleware status through a callback
-The Middleware Status message includes the latest status code sent by the middleware while performing
+The MiddlewareListener object allows to get the middleware status, which includes the latest status code sent by the middleware while performing
 its operations.
 
 The current status codes (along with their description) are:
@@ -243,12 +242,18 @@ The current status codes (along with their description) are:
 | Status Code |   | Description |
 |---|---|---|
 | 0 | OK | Ok |
-| 100 | START_GENERIC_ERROR | Generic error while starting session |
+| 100 | START_GENERIC_ERROR | Can't start generic error: Stopping |
 | 101 | CONNECT_THIMBLE | Unable to start, connect at least one thimble and retry |
 | 102 | WRONG_THIMBLES | Unable to start, connect the right thimbles matched to the bracelet and retry |
 | 103 | BATTERY_TOO_LOW | Battery is too low, cannot start |
-| 104 | RUNNING_DEVICE_CHARGING | Can't start while the devices are connected to the power supply |
+| 104 | FIRMWARE_COMPATIBILITY | Can't start while the devices are connected to the power supply |
+| 105 | SET_IMU_SAMPLE_RATE_ERROR | Error while setting IMU Sample Rate! Device Disconnected! |
+| 106 | RUNNING_SENSOR_ON_MASK | Inconsistency on Analog Sensors raw data! Please try again or Restart your device/s! |
+| 107 | RUNNING_DEVICE_CHARGING | Can't start while the devices are connected to the power supply |
 | 200 | CONSECUTIVE_TRACKING_ERRORS | Too many consecutive running sensor errors, stopping session |
+| 201 | DONGLE_DISCONNECT_RUNNING | BLE Dongle disconnected while running, stopping session |
+| 202 | TD_DISCONNECT_RUNNING | TouchDIVER disconnected while running, stopping session |
+| 203 | DONGLE_CONNECTION_ERROR | Error on Dongle during connection phase! |
 | 300 | STOP_GENERIC_ERROR | Generic error occurred while stopping session |
 
 @note The description of each status code might change between different Middleware versions, use the status code to check instead of the description.

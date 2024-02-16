@@ -1,0 +1,17 @@
+
+# Change Log
+All notable changes to this project will be documented in this file.
+ 
+### [1.2.0] - 2024-02-16
+* Add raw sensors data tracking object
+* Add middleware status messages and event
+* Add connected devices status and event
+
+### [1.1.0]
+* Fix connection issue to middleware while offline
+
+### [1.1]
+* Add calibration procedure start/stop and listener
+* Add new default tracking message and values for closure
+* Add basic effect class for haptic feedback
+* Remove unused velocity parameters from texture

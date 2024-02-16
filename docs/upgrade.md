@@ -10,8 +10,7 @@ On other systems (e.g. cmake) the procedure might be different.
 ## Code Migration
 
 The new SDK version is mostly compatible with the older versions.
-
-The only breaking change introduced relates to the WeArtTexture class, in which the ```VelocityX``` and ```VelocityY``` params has been removed because are not used anymore. The ```VelocityZ``` parameter has been renamed to ```Velocity```, and represents the speed at which the texture vibration is played by the thimble.
+We have introduced new components that could be used in your project.
 
 ## Dependencies
 The new SDK version has the following dependencies:
@@ -21,7 +20,7 @@ The dependencies can be found and installed by using the nuget package manager.
 
 ## Changelog
 
-### Version 1.2 (latest)
+### Version 1.2.0 (latest)
 * Add raw sensors data tracking object
 * Add middleware status messages and event
 * Add connected devices status and event
