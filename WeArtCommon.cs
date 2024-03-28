@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using WeArt.Messages;
 
 namespace WeArt.Core
@@ -203,6 +204,18 @@ namespace WeArt.Core
         public Accelerometer Accelerometer { get; set; }
         public Gyroscope Gyroscope { get; set; }
         public TimeOfFlight TimeOfFlight { get; set; }
+    }
+
+    public class AnalogSensorRawData
+    {
+        [JsonIgnore]
+        public DateTime Timestamp { get; set; }
+
+        public float NtcTemperatureRaw { get; set; }
+
+        public float NtcTemperatureConverted { get; set; }
+        public float ForceSensingRaw { get; set; }
+        public float ForceSensingConverted { get; set; }
     }
 
     /// <summary>

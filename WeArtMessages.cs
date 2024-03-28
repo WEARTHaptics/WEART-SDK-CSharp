@@ -372,6 +372,17 @@ namespace WeArt.Messages
         public SensorData Palm { get; set; }
     }
 
+    [WeArtMiddlewareMessageID("RAW_SENSOR_ON_MASK")]
+    public class AnalogSensorsData : WeArtJsonMessage
+    {
+        public HandSide HandSide { get; set; }
+
+        public ActuationPoint ActuationPoint { get; set; }
+        public AnalogSensorRawData Index { get; set; }
+        public AnalogSensorRawData Thumb { get; set; }
+        public AnalogSensorRawData Middle { get; set; }
+    }
+
     [WeArtMiddlewareMessageID("MW_GET_STATUS")]
     public class GetMiddlewareStatusMessage : WeArtJsonMessage { }
 
