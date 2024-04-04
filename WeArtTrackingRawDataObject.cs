@@ -11,9 +11,9 @@ namespace WeArt.Components
     /// <summary>
     /// This component receives and exposes raw sensors data from the hardware
     /// </summary>
-    public class WeArtRawSensorsDataTrackingObject
+    public class WeArtTrackingRawDataObject
     {
-        public delegate void dRawSensorDataEvent(SensorData sensorsData);
+        public delegate void dRawSensorDataEvent(TrackingRawData sensorsData);
 
         public event dRawSensorDataEvent DataReceived;
 
@@ -40,9 +40,9 @@ namespace WeArt.Components
             set => _actuationPoint = value;
         }
 
-        public SensorData LastSample { get; private set; }
+        public TrackingRawData LastSample { get; private set; }
 
-        public WeArtRawSensorsDataTrackingObject(WeArtClient client, HandSide handSide = HandSide.Right, ActuationPoint actuationPoint = ActuationPoint.Index)
+        public WeArtTrackingRawDataObject(WeArtClient client, HandSide handSide = HandSide.Right, ActuationPoint actuationPoint = ActuationPoint.Index)
         {
             _client = client;
             _client.OnConnectionStatusChanged -= OnConnectionChanged;
@@ -51,12 +51,12 @@ namespace WeArt.Components
             _client.OnMessage += OnMessageReceived;
             HandSide = handSide;
             ActuationPoint = actuationPoint;
-            LastSample = new SensorData { };
+            LastSample = new TrackingRawData { };
         }
 
         internal void OnConnectionChanged(bool connected)
         {
-            LastSample = new SensorData { };
+            LastSample = new TrackingRawData { };
         }
 
         private void OnMessageReceived(WeArtClient.MessageType type, IWeArtMessage message)
@@ -69,7 +69,7 @@ namespace WeArt.Components
                 if (rawDataMessage.HandSide != _handSide)
                     return;
 
-                SensorData newSample;
+                TrackingRawData newSample;
                 switch (ActuationPoint)
                 {
                     case ActuationPoint.Thumb: newSample = rawDataMessage.Thumb; break;

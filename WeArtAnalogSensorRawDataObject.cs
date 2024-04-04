@@ -1,14 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+/**
+*	WEART - Analog sensor raw data
+*	https://www.weart.it/
+*/
+
 using WeArt.Core;
 using WeArt.Messages;
 
 namespace WeArt.Components
 {
-    internal class WeArtAnalogSensorRawDataObject
+
+    /// <summary>
+    /// This component receives and exposes anlog raw sensors data from the thimbles
+    /// </summary>
+    public class WeArtAnalogSensorRawDataObject
     {
         public delegate void dAnalogSensorRawDataEvent(AnalogSensorRawData analogRawData);
 

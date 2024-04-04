@@ -193,7 +193,7 @@ private void AddEffectSample1_Click(object sender, RoutedEventArgs e)
 }
 ~~~~~~~~~~~~~
 
-### Raw Sensors Data tracking
+### Tracking raw data
 
 ![Raw Sensors Data Panel](./example_app/ExampleApp_RawData.png)
 
@@ -206,27 +206,57 @@ In particular, it's possible to choose the hand and actuation point from which t
 
 To start receiving raw data, click on the "Start Raw Data" button, and to stop click on the "Stop Raw Data" button.
 
-When it's loaded, the application creates a WeArt.Components.WeArtRawSensorsDataTrackingObject for each pair of (HandSide, ActuationPoint).
+When it's loaded, the application creates a WeArt.Components.WeArtTrackingRawDataObject for each pair of (HandSide, ActuationPoint).
 When one of the combo boxes values changes, the application adds a callback to the corresponding tracking object.
 The callback is responsible for displaying the received sample:
 
 ~~~~~~~~~~~~~{.cs}
-private void RenderRawDataAsync(SensorData data)
+private void RenderRawDataAsync(TrackingRawData data)
 {
-	Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-	{
-		Acc_X.Text = data.Accelerometer.X.ToString();
-		Acc_Y.Text = data.Accelerometer.Y.ToString();
-		Acc_Y.Text = data.Accelerometer.Z.ToString();
+    Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+    {
+        Acc_X.Text = data.Accelerometer.X.ToString();
+        Acc_Y.Text = data.Accelerometer.Y.ToString();
+        Acc_Y.Text = data.Accelerometer.Z.ToString();
 
-		Gyro_X.Text = data.Gyroscope.X.ToString();
-		Gyro_Y.Text = data.Gyroscope.Y.ToString();
-		Gyro_Y.Text = data.Gyroscope.Z.ToString();
+        Gyro_X.Text = data.Gyroscope.X.ToString();
+        Gyro_Y.Text = data.Gyroscope.Y.ToString();
+        Gyro_Y.Text = data.Gyroscope.Z.ToString();
 
-		TimeOfFlight.Text = data.TimeOfFlight.Distance.ToString();
+        TimeOfFlight.Text = data.TimeOfFlight.Distance.ToString();
 
-		LastSampleTime.Text = data.Timestamp.ToString("yyyy/MM/dd HH:mm:ss.fff");
-	});
+        LastSampleTime.Text = data.Timestamp.ToString("yyyy/MM/dd HH:mm:ss.fff");
+    });
+}
+~~~~~~~~~~~~~
+
+### Analog Raw Sensors Data 
+
+![Analog Sensors Data Panel](./example_app/ExampleApp_AnalogSensorData.png)
+
+In the right section of the window, the application displays the anlog raw data of the different sensors aboard the TouchDIVER.
+In particular, it's possible to choose the hand and actuation point from which to visualize:
+* Timestamp of the last sample received
+* NTC - Negative Temperature Coefficient (raw data and converted degree)
+* FSR - force sensing resistor (raw adata and converted newton)
+
+To start receiving analog sensor data, active this function on the Middleware and click on the "Start Raw Data" button, and to stop click on the "Stop Raw Data" button. In this modality the other tracking data will not received by the SDK.
+
+When it's loaded, the application creates a WeArt.Components.WeArtAnalogSensorRawDataObject for each pair of (HandSide, ActuationPoint).
+Using a timer, the application polls the chosen sensor and displays its data:
+
+~~~~~~~~~~~~~{.cpp}
+private void RenderAanlogSensorRawDataAsync(AnalogSensorRawData data)
+{
+    Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+    {
+        ntcTempRawValue.Text = data.NtcTemperatureRaw.ToString();
+        ntcTempRawConvertedValue.Text = data.NtcTemperatureConverted.ToString();
+        forceSensingRawValue.Text = data.ForceSensingRaw.ToString();
+        forceSensingConvertedValue.Text = data.ForceSensingConverted.ToString();
+
+        LastSampleTime.Text = data.Timestamp.ToString("yyyy/MM/dd HH:mm:ss.fff");
+    });
 }
 ~~~~~~~~~~~~~
 

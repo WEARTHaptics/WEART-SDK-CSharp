@@ -366,10 +366,10 @@ namespace WeArt.Messages
     public class RawDataMessage : WeArtJsonMessage
     {
         public HandSide HandSide { get; set; }
-        public SensorData Index { get; set; }
-        public SensorData Thumb { get; set; }
-        public SensorData Middle { get; set; }
-        public SensorData Palm { get; set; }
+        public TrackingRawData Index { get; set; }
+        public TrackingRawData Thumb { get; set; }
+        public TrackingRawData Middle { get; set; }
+        public TrackingRawData Palm { get; set; }
     }
 
     [WeArtMiddlewareMessageID("RAW_SENSOR_ON_MASK")]

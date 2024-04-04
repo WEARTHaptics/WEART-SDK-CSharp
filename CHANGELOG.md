@@ -2,6 +2,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
  
+### [1.3.0] - 
+
+### Added
+* WeArtAnalogSensorRawDataObject new class that provides analog raw data from thimble's sensors
+
+### Changed
+* WeArtRawSensorDataTrackingObject to WeArtTrackingRawDataObject
+* SensorData to TrackingRawData
+
+
 ### [1.2.0] - 2024-02-16
 * Add raw sensors data tracking object
 * Add middleware status messages and event

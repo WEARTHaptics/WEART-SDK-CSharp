@@ -196,7 +196,7 @@ namespace WeArt.Core
         public int Distance { get; set; }
     }
 
-    public class SensorData
+    public class TrackingRawData
     {
         [JsonIgnore]
         public DateTime Timestamp { get; set; }
