@@ -6,10 +6,16 @@ The SDK allows to connect to the Weart middleware and perform various actions wi
 * Start and Stop the middleware operations
 * Calibrate the device
 * Receive tracking data from the devices
+* Receive raw data from the thimble's motion sensors 
+* Receive analog raw data from the thimble's senosrs
 * Send haptic effects to the devices
 
 # Architecture
 <img src="./architecture.svg" width="100%" alt="C++ SDK Architecture" />
+
+## Links
+* Github source code repository, go [here](https://github.com/WEARTHaptics/WEART-SDK-CSharp/)
+* an example source code application is available [here](https://github.com/WEARTHaptics/WEART-SDK-CSharp-Example/).
 
 # Setup
 The minimum setup to use the weart SDK consists of:

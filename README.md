@@ -17,9 +17,12 @@ On Visual Studio:
 * Click "Add" -> "Existing Item..."
 * Select all the sdk source files and click "Add"
 
-## Documentation
+## Documentation and references
 For the documentation, go [here](https://weart.it/developer-guide/)
+
+## Example Project
+An example source code application is available [here](https://github.com/WEARTHaptics/WEART-SDK-CSharp-Example).
 
 ## Copyright
 
-Copyright &copy; 2023 Weart S.r.l.
+Copyright &copy; 2024 Weart S.r.l.
