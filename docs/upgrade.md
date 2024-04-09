@@ -4,6 +4,8 @@ To update your application to the latest SDK, download and extract the C# sdk ar
 
 The new version includes additional files, so it's necessary to add them to the project in order to avoid linking errors.
 
+/note 
+
 This can be done on Visual Studio by right-clicking on the solution, then clicking on Add -> Existing Item and selecting all the SDK files.
 On other systems (e.g. cmake) the procedure might be different.
 
@@ -17,19 +19,3 @@ The new SDK version has the following dependencies:
 * Newtonsoft.Json version >= 13.0.0 (currently tested with version 13.0.3)
 
 The dependencies can be found and installed by using the nuget package manager.
-
-## Changelog
-
-### Version 1.2.0 (latest)
-* Add raw sensors data tracking object
-* Add middleware status messages and event
-* Add connected devices status and event
-
-### Version 1.1.1
-* Fix connection issue to middleware while offline
-
-### Version 1.1
-* Add calibration procedure start/stop and listener
-* Add new default tracking message and values for closure
-* Add basic effect class for haptic feedback
-* Remove unused velocity parameters from texture
