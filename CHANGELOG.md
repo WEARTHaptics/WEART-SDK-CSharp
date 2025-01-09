@@ -2,6 +2,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
  
+### [2.0.0]
+
+### Added
+* New TouchDIVER Pro features
+* Custom JSON converted class
+
+### Changed
+* Replaced Newtonsoft.JSON libraty to native System.text.json for deseralizing and serializing JSON data 
+
+### Removed
+
 ### [1.3.0]
 
 ### Added

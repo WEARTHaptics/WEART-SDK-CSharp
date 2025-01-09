@@ -1,18 +1,13 @@
-﻿/**
-*	WEART - Serializer helper
-*	https://www.weart.it/
-*/
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace WeArt.Messages
 {
@@ -33,15 +28,15 @@ namespace WeArt.Messages
 
         internal class JsonMessageTemplate
         {
-            [JsonProperty(PropertyName = "ts")]
+            [JsonPropertyName("ts")]
             [JsonConverter(typeof(MillisecondsEpochConverter))]
             public DateTime Timestamp { get; set; }
 
-            [JsonProperty(PropertyName = "type")]
+            [JsonPropertyName("type")]
             public string Type { get; set; }
 
-            [JsonProperty(PropertyName = "data")]
-            public JToken Data { get; set; }
+            [JsonPropertyName("data")]
+            public object Data { get; set; }  // Can hold either DeviceStatus, MiddlewareStatusMessage, etc.
         }
 
         public override bool Serialize(IWeArtMessage message, out string data)
@@ -83,22 +78,24 @@ namespace WeArt.Messages
 
         private string SerializeJsonMessage(ReflectionData reflectionData, WeArtJsonMessage jsonMessage)
         {
+            // Configure JSON serializer options
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                WriteIndented = false  // Equivalent to Formatting.None in Newtonsoft
+            };
+
+            // Create JsonMessageTemplate with the appropriate data
             JsonMessageTemplate json = new JsonMessageTemplate
             {
                 Type = reflectionData.Id,
                 Timestamp = jsonMessage.Timestamp,
-                Data = JToken.FromObject(jsonMessage),
+                Data = jsonMessage  // Assign the correct data object
             };
-            DefaultContractResolver jsonContract = new DefaultContractResolver
-            {
-                NamingStrategy = new CamelCaseNamingStrategy()
-            };
-            JsonSerializerSettings jsonSettings = new JsonSerializerSettings
-            {
-                ContractResolver = jsonContract,
-                Formatting = Formatting.None,
-            };
-            return JsonConvert.SerializeObject(json, jsonSettings);
+
+            // Serialize JsonMessageTemplate to JSON string
+            return JsonSerializer.Serialize(json, jsonOptions);
         }
 
         public override bool Deserialize(string data, out IWeArtMessage message)
@@ -157,7 +154,7 @@ namespace WeArt.Messages
         {
             try
             {
-                JsonMessageTemplate json = JsonConvert.DeserializeObject<JsonMessageTemplate>(data);
+                JsonMessageTemplate json = JsonSerializer.Deserialize<JsonMessageTemplate>(data);
                 ReflectionData reflectionData = ReflectionData.GetFrom(json.Type);
 
                 // Message without parameters
@@ -169,7 +166,12 @@ namespace WeArt.Messages
                 }
 
                 // Message with parameters
-                return (IWeArtMessage)json.Data.ToObject(reflectionData.Type) ?? null;
+                return (IWeArtMessage)JsonSerializer.Deserialize(json.Data.ToString(), reflectionData.Type, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    IncludeFields = true
+                });
+
             }
             catch (MessageTypeNotFound)
             {
@@ -259,19 +261,23 @@ namespace WeArt.Messages
         }
     }
 
-    public class MillisecondsEpochConverter : DateTimeConverterBase
+    public class MillisecondsEpochConverter : JsonConverter<DateTime>
     {
         private static readonly DateTime _epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            writer.WriteRawValue(((long)((DateTime)value - _epoch).TotalMilliseconds).ToString());
+            if (reader.TokenType != JsonTokenType.Number)
+                throw new JsonException("Expected number token for Unix timestamp in milliseconds.");
+
+            long milliseconds = reader.GetInt64();
+            return _epoch.AddMilliseconds(milliseconds);
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
         {
-            if (reader.Value == null) { return null; }
-            return _epoch.AddMilliseconds((long)reader.Value);
+            long milliseconds = (long)(value - _epoch).TotalMilliseconds;
+            writer.WriteNumberValue(milliseconds);
         }
     }
 }

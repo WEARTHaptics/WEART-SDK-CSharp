@@ -1,14 +1,10 @@
-/**
-*	WEART - Message objects
-*	https://www.weart.it/
-*/
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using System.Text.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using WeArt.Core;
 using static WeArt.Messages.WeArtMessageCustomSerializer;
+using System.Numerics;
 
 namespace WeArt.Messages
 {
@@ -88,6 +84,12 @@ namespace WeArt.Messages
     /// </summary>
     [WeArtMiddlewareMessageID("StopCalibration")]
     public class StopCalibrationMessage : IWeArtMessage { }
+
+    /// <summary>
+    /// Message that requests the middleware to reset the calibration procedure
+    /// </summary>
+    [WeArtMiddlewareMessageID("ResetCalibration")]
+    public class ResetCalibrationMessage : IWeArtMessage { }
 
     /// <summary>
     /// Message received from the middleware containing the current calibration procedure status
@@ -306,14 +308,14 @@ namespace WeArt.Messages
             string[] fields = new string[9];
             int i = 0;
             fields[i++] = "Tracking";
-            fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Thumb)).ToString();
-            fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Index)).ToString();
-            fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Middle)).ToString();
-            fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Palm)).ToString();
-            fields[i++] = Closures.GetValueOrDefault((HandSide.Left, ActuationPoint.Thumb)).ToString();
-            fields[i++] = Closures.GetValueOrDefault((HandSide.Left, ActuationPoint.Index)).ToString();
-            fields[i++] = Closures.GetValueOrDefault((HandSide.Left, ActuationPoint.Middle)).ToString();
-            fields[i] = Closures.GetValueOrDefault((HandSide.Left, ActuationPoint.Palm)).ToString();
+            fields[i++] = Closures[(HandSide.Right, ActuationPoint.Thumb)].ToString();
+            fields[i++] = Closures[(HandSide.Right, ActuationPoint.Index)].ToString();
+            fields[i++] = Closures[(HandSide.Right, ActuationPoint.Middle)].ToString();
+            fields[i++] = Closures[(HandSide.Right, ActuationPoint.Palm)].ToString();
+            fields[i++] = Closures[(HandSide.Left, ActuationPoint.Thumb)].ToString();
+            fields[i++] = Closures[(HandSide.Left, ActuationPoint.Index)].ToString();
+            fields[i++] = Closures[(HandSide.Left, ActuationPoint.Middle)].ToString();
+            fields[i] = Closures[(HandSide.Left, ActuationPoint.Palm)].ToString();
             return fields;
         }
 
@@ -340,21 +342,48 @@ namespace WeArt.Messages
             fields[i++] = TrackingType.Serialize();
 
             // Right Hand
-            fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Index)).ToString();
-            fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Thumb)).ToString();
-            fields[i++] = Abductions.GetValueOrDefault((HandSide.Right, ActuationPoint.Thumb)).ToString();
-            fields[i++] = Closures.GetValueOrDefault((HandSide.Right, ActuationPoint.Middle)).ToString();
+            fields[i++] = Closures[(HandSide.Right, ActuationPoint.Index)].ToString();
+            fields[i++] = Closures[(HandSide.Right, ActuationPoint.Thumb)].ToString();
+            fields[i++] = Abductions[(HandSide.Right, ActuationPoint.Thumb)].ToString();
+            fields[i++] = Closures[(HandSide.Right, ActuationPoint.Middle)].ToString();
 
             // Left Hand
-            fields[i++] = Closures.GetValueOrDefault((HandSide.Left, ActuationPoint.Index)).ToString();
-            fields[i++] = Closures.GetValueOrDefault((HandSide.Left, ActuationPoint.Thumb)).ToString();
-            fields[i++] = Abductions.GetValueOrDefault((HandSide.Left, ActuationPoint.Thumb)).ToString();
-            fields[i] = Closures.GetValueOrDefault((HandSide.Left, ActuationPoint.Middle)).ToString();
+            fields[i++] = Closures[(HandSide.Left, ActuationPoint.Index)].ToString();
+            fields[i++] = Closures[(HandSide.Left, ActuationPoint.Thumb)].ToString();
+            fields[i++] = Abductions[(HandSide.Left, ActuationPoint.Thumb)].ToString();
+            fields[i] = Closures[(HandSide.Left, ActuationPoint.Middle)].ToString();
 
             return fields;
         }
     }
 
+    /// <summary>
+    /// Message received from the middleware containing the closure data for G2 devices
+    /// </summary>
+    [WeArtMiddlewareMessageID("TRACKING_BENDING_G2")]
+    public class TrackingMessageG2 : WeArtJsonMessage
+    {
+        [JsonConverter(typeof(EnumConverter<HandSide>))]
+        public HandSide HandSide { get; set; }
+        public ThimbleData Index { get; set; }
+        public ThimbleData Middle { get; set; }
+        public ThimbleData Thumb { get; set; }
+        public ThimbleData Annular { get; set; }
+        public ThimbleData Pinky { get; set; }
+        public ThimbleData Palm { get; set; }
+        public Wrist Wrist { get; set; }
+
+    }
+    public class ThimbleData
+    {
+        public float Closure { get; set; }
+        public float Abduction { get; set; }
+    }
+
+    public class Wrist
+    {
+        public Quaternion Quaternion { get; set; }
+    }
 
     [WeArtMiddlewareMessageID("RAW_DATA_ON")]
     public class RawDataOnMessage : WeArtJsonMessage { }
@@ -365,6 +394,7 @@ namespace WeArt.Messages
     [WeArtMiddlewareMessageID("RAW_DATA")]
     public class RawDataMessage : WeArtJsonMessage
     {
+        [JsonConverter(typeof(EnumConverter<HandSide>))]
         public HandSide HandSide { get; set; }
         public TrackingRawData Index { get; set; }
         public TrackingRawData Thumb { get; set; }
@@ -375,6 +405,7 @@ namespace WeArt.Messages
     [WeArtMiddlewareMessageID("RAW_SENSOR_ON_MASK")]
     public class AnalogSensorsData : WeArtJsonMessage
     {
+        [JsonConverter(typeof(EnumConverter<HandSide>))]
         public HandSide HandSide { get; set; }
 
         public ActuationPoint ActuationPoint { get; set; }
@@ -402,10 +433,30 @@ namespace WeArt.Messages
         CALIBRATION,
     };
 
+    /// <summary>
+    /// Defines the TD connection type.
+    /// </summary>
+    public enum ConnectionType
+    {
+        NONE,
+        BLE,
+        WIFI,
+        USB
+    }
+
+    /// <summary>
+    /// Defines the selected type of devices at WeartApp
+    /// </summary>
+    public enum DeviceSelection
+    {
+        VirtualDevices,
+        PhysicalDevices
+    }
+
     [WeArtMiddlewareMessageID("MW_STATUS")]
     public class MiddlewareStatusMessage : WeArtJsonMessage
     {
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(EnumConverter<MiddlewareStatus>))]
         public MiddlewareStatus Status { get; set; } = MiddlewareStatus.DISCONNECTED;
 
         public string Version { get; set; } = "";
@@ -416,33 +467,24 @@ namespace WeArt.Messages
 
         public bool ActuationsEnabled { get; set; } = false;
 
+        [JsonConverter(typeof(ListConverter<MiddlewareConnectedDevice>))]
         public List<MiddlewareConnectedDevice> ConnectedDevices { get; set; } = new List<MiddlewareConnectedDevice>();
 
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this);
         }
     }
-
-    public struct MiddlewareConnectedDevice
-    {
-        public string MacAddress { get; set; }
-
-        [JsonConverter(typeof(StringEnumConverter))]
-        public HandSide HandSide { get; set; }
-    }
-
-    [WeArtMiddlewareMessageID("DEVICES_GET_STATUS")]
-    public class GetDevicesStatusMessage : WeArtJsonMessage { }
 
     [WeArtMiddlewareMessageID("DEVICES_STATUS")]
     public class DevicesStatusMessage : WeArtJsonMessage
     {
-        public List<DeviceStatus> Devices { get; set; }
+        [JsonConverter(typeof(ListConverter<DeviceStatusData>))]
+        public List<DeviceStatusData> Devices { get; set; } = new List<DeviceStatusData> { };
 
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this);
         }
     }
 
@@ -459,7 +501,7 @@ namespace WeArt.Messages
         /// <summary>
         /// Hand side to which the device is assigned
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(EnumConverter<HandSide>))]
         public HandSide HandSide { get; set; }
 
         /// <summary>
@@ -478,30 +520,161 @@ namespace WeArt.Messages
         public List<ThimbleStatus> Thimbles { get; set; }
     }
 
-    /// <summary>
-    /// Status of a single thimble
-    /// </summary>
-    public struct ThimbleStatus
+    public class DeviceStatusData : ITouchDiverData
     {
-        /// <summary>
-        /// Actuation Point to which the thimble is assigned
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
+        public string MacAddress { get; set; }
+
+        public string FirmwareVersion { get; set; }
+
+        [JsonConverter(typeof(EnumConverter<HandSide>))]
+        public HandSide HandSide { get; set; }
+
+        public int BatteryLevel { get; set; }
+
+        public bool Charging { get; set; }
+
+        [JsonConverter(typeof(ListConverter<ThimbleStatus>))]
+        public List<ThimbleStatus> Thimbles { get; set; } = new List<ThimbleStatus> { };
+    }
+
+    public class ThimbleStatus
+    {
+        [JsonConverter(typeof(EnumConverter<ActuationPoint>))]
         public ActuationPoint Id { get; set; }
 
-        /// <summary>
-        /// Tells whether the thimble is connected or not to the device
-        /// </summary>
         public bool Connected { get; set; }
 
-        /// <summary>
-        /// Current thimble status code (0 = OK)
-        /// </summary>
         public int StatusCode { get; set; }
 
-        /// <summary>
-        /// Description of the thimble status code
-        /// </summary>
         public string ErrorDesc { get; set; }
+    }
+
+    public class MiddlewareConnectedDevice
+    {
+        public string MacAddress { get; set; }
+
+        [JsonConverter(typeof(EnumConverter<HandSide>))]
+        public HandSide HandSide { get; set; }
+    }
+
+    [WeArtMiddlewareMessageID("DEVICES_GET_STATUS")]
+    public class GetDevicesStatusMessage : WeArtJsonMessage { }
+
+
+    [WeArtMiddlewareMessageID("WA_STATUS")]
+    public class WeartAppStatusMessage : WeArtJsonMessage
+    {
+        [JsonConverter(typeof(EnumConverter<MiddlewareStatus>))]
+        public MiddlewareStatus Status { get; set; } = MiddlewareStatus.DISCONNECTED;
+        public string Version { get; set; } = "";
+        public int StatusCode { get; set; } = 0;
+        public string ErrorDesc { get; set; } = "";
+        public bool ActuationsEnabled { get; set; } = false;
+
+        [JsonConverter(typeof(EnumConverter<ConnectionType>))]
+        public ConnectionType ConnectionType { get; set; } = ConnectionType.BLE;
+        public bool AutoConnection { get; set; } = false;
+
+        [JsonConverter(typeof(EnumConverter<DeviceSelection>))]
+        public DeviceSelection DeviceSelection { get; set; } = DeviceSelection.VirtualDevices;
+
+        public bool TrackingPlayback { get; set; } = false;
+        public bool RawDataLog { get; set; } = false;
+        public bool SensorOnMask { get; set; } = false;
+
+        [JsonConverter(typeof(ListConverter<MiddlewareConnectedDevice>))]
+        public List<MiddlewareConnectedDevice> ConnectedDevices { get; set; } = new List<MiddlewareConnectedDevice>();
+
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
+    }
+
+    public interface ITouchDiverData
+    {
+        string MacAddress { get; set; }
+
+        [JsonConverter(typeof(EnumConverter<HandSide>))]
+        public HandSide HandSide { get; set; }
+    }
+
+    /// <summary>
+    /// Message received from the middleware containing the TouchDiver Pro Status
+    /// </summary>
+    [WeArtMiddlewareMessageID("WEART_TD_PRO_STATUS")]
+    public class TouchDiverProStatus : WeArtJsonMessage
+    {
+        [JsonConverter(typeof(ListConverter<TouchDiverProStatusData>))]
+        public List<TouchDiverProStatusData> Devices { get; set; } = new List<TouchDiverProStatusData>();
+
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
+    }
+
+    public class TouchDiverProStatusData : ITouchDiverData
+    {
+        public string MacAddress { get; set; }
+
+        [JsonConverter(typeof(EnumConverter<HandSide>))]
+        public HandSide HandSide { get; set; }
+
+        public MasterData Master { get; set; } = new MasterData();
+
+        [JsonConverter(typeof(ListConverter<TouchDiverProThimbleStatus>))]
+        public List<TouchDiverProThimbleStatus> Nodes { get; set; } = new List<TouchDiverProThimbleStatus>();
+    }
+
+    public class MasterData
+    {
+        public int BatteryLevel { get; set; }
+        public bool Charging { get; set; }
+        public bool ChargeCompleted { get; set; }
+        public ConnectionData Connection { get; set; } = new ConnectionData();
+        public bool ImuFault { get; set; }
+        public bool AdcFault { get; set; }
+        public bool ButtonPushed { get; set; }
+    }
+
+    public class ConnectionData
+    {
+        public bool BluetoothOn { get; set; }
+        public bool BluetoothConnected { get; set; }
+        public bool WifiOn { get; set; }
+        public bool WifiConnected { get; set; }
+        public bool UsbConnected { get; set; }
+    }
+
+    public class TouchDiverProThimbleStatus
+    {
+        [JsonConverter(typeof(EnumConverter<ActuationPoint>))]
+        public ActuationPoint Id { get; set; }
+        public bool Connected { get; set; }
+        public bool ImuFault { get; set; }
+        public bool AdcFault { get; set; }
+        public bool TofFault { get; set; }
+    }
+
+    /// <summary>
+    /// Message received from the middleware containing the TouchDiver Pro Raw Data 
+    /// </summary>
+    [WeArtMiddlewareMessageID("RAW_DATA_TD_PRO")]
+    public class RawDataTouchDiverPro : WeArtJsonMessage
+    {
+        [JsonConverter(typeof(EnumConverter<HandSide>))]
+        public HandSide HandSide { get; set; }
+        public TrackingRawDataG2 Index { get; set; } = new TrackingRawDataG2();
+        public TrackingRawDataG2 Middle { get; set; } = new TrackingRawDataG2();
+        public TrackingRawDataG2 Thumb { get; set; } = new TrackingRawDataG2();
+        public TrackingRawDataG2 Annular { get; set; } = new TrackingRawDataG2();
+        public TrackingRawDataG2 Pinky { get; set; } = new TrackingRawDataG2();
+        public TrackingRawDataG2 Palm { get; set; } = new TrackingRawDataG2();
+
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
     }
 }

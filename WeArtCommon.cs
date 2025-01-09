@@ -1,26 +1,40 @@
-/**
-*	WEART - Common utility 
-*	https://www.weart.it/
-*/
-
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using WeArt.Messages;
 
 namespace WeArt.Core
 {
+    /// <summary>
+    /// The device generation, TD or TD_Pro
+    /// </summary>
+    public enum DeviceGeneration
+    {
+        TD = 0,
+        TD_Pro = 1
+    }
+
+
     /// <summary>
     /// The hand side, left or right
     /// </summary>
     public enum HandSide
     {
         Left = 0,
-        Right = 1
+        Right = 1,
+    };
+
+    /// <summary>
+    /// The hand side, left or right
+    /// </summary>
+    public enum DeviceID
+    {
+        None = -1,
+        First = 0,
+        Second = 1
     };
 
     /// <summary>
@@ -39,10 +53,13 @@ namespace WeArt.Core
     /// </summary>
     public enum ActuationPoint
     {
-        Thumb = 0,
-        Index = 1,
-        Middle = 2,
-        Palm = 3,
+        None = 0,
+        Thumb = 1,
+        Index = 2,
+        Middle = 3,
+        Palm = 4,
+        Annular = 5,
+        Pinky = 6,
     };
 
     /// <summary>
@@ -61,6 +78,13 @@ namespace WeArt.Core
         /// </summary>
         [Description("TrackType1")]
         WEART_HAND,
+
+
+        /// <summary>
+        /// Closure values for all five fingers and thumb abduction value
+        /// </summary>
+        [Description("TrackingType1G2")]
+        WEART_HAND_G2,
     }
 
     /// <summary>
@@ -122,6 +146,8 @@ namespace WeArt.Core
         Index = 1 << ActuationPoint.Index,
         Middle = 1 << ActuationPoint.Middle,
         Palm = 1 << ActuationPoint.Palm,
+        Annular = 1 << ActuationPoint.Annular,
+        Pinky = 1 << ActuationPoint.Pinky,
     };
 
     /// <summary>
@@ -129,16 +155,21 @@ namespace WeArt.Core
     /// </summary>
     public enum TextureType : int
     {
-        ClickNormal = 0, ClickSoft = 1, DoubleClick = 2,
-        AluminiumFineMeshSlow = 3, AluminiumFineMeshFast = 4,
-        PlasticMeshSlow = 5, ProfiledAluminiumMeshMedium = 6, ProfiledAluminiumMeshFast = 7,
-        RhombAluminiumMeshMedium = 8,
-        TextileMeshMedium = 9,
+        Click = 0,
+        SoftClick = 1,
+        DoubleClick = 2,
+        FineAluminiumSlow = 3,
+        FineAluminumFast = 4,
+        PlasticSlow = 5,
+        ProfiledAluminiumMedium = 6,
+        ProfiledAluminiumFast = 7,
+        RhombAluminiumMedium = 8,
+        TextileMedium = 9,
         CrushedRock = 10,
-        VenetianGranite = 11,
-        SilverOak = 12,
-        LaminatedWood = 13,
-        ProfiledRubberSlow = 14,
+        Granite = 11,
+        Wood = 12,
+        Laminate = 13,
+        ProfiledRubber = 14,
         VelcroHooks = 15,
         VelcroLoops = 16,
         PlasticFoil = 17,
@@ -146,16 +177,6 @@ namespace WeArt.Core
         Cotton = 19,
         Aluminium = 20,
         DoubleSidedTape = 21
-    }
-
-    /// <summary>
-    /// Enum Hand Closing State
-    /// </summary>
-    public enum HandClosingState
-    {
-        Open = 0,
-        Closing = 1,
-        Closed = 2
     }
 
     /// <summary>
@@ -168,6 +189,15 @@ namespace WeArt.Core
     }
 
     /// <summary>
+    /// Type of grasping system used
+    /// </summary>
+    public enum GraspingType
+    {
+        Physical = 0,
+        Snap = 1
+    }
+
+    /// <summary>
     /// Status of the current calibration procedure
     /// </summary>
     public enum CalibrationStatus
@@ -177,24 +207,25 @@ namespace WeArt.Core
         Running = 2,
     };
 
-    public struct Accelerometer
+    public class Accelerometer
     {
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }
     }
 
-    public struct Gyroscope
+    public class Gyroscope
     {
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }
     }
 
-    public struct TimeOfFlight
+    public class TimeOfFlight
     {
         public int Distance { get; set; }
     }
+
 
     public class TrackingRawData
     {
@@ -204,6 +235,16 @@ namespace WeArt.Core
         public Accelerometer Accelerometer { get; set; }
         public Gyroscope Gyroscope { get; set; }
         public TimeOfFlight TimeOfFlight { get; set; }
+    }
+
+
+    public class TrackingRawDataG2
+    {
+        [JsonIgnore]
+        public DateTime Timestamp { get; set; }
+
+        public Accelerometer Accelerometer { get; set; }
+        public Gyroscope Gyroscope { get; set; }
     }
 
     public class AnalogSensorRawData
@@ -256,17 +297,42 @@ namespace WeArt.Core
         /// <summary>
         /// Status of the devices (TouchDIVERs) connected to the middleware
         /// </summary>
-        public List<DeviceStatus> Devices { get; set; } = new List<DeviceStatus>();
+        public List<DeviceStatusData> Devices { get; set; } = new List<DeviceStatusData>();
     }
+
+    /*
+    #region DEVICES CONNECTED EVENTS FOR WEARTCONTROLLER
+    public class ConnectedDevices : EventArgs
+    {
+        public bool MiddlewareRunning { get; set; }
+        public List<ITouchDiverData> Devices { get; private set; }
+
+        [JsonConstructor]
+        public ConnectedDevices(List<ITouchDiverData> devices, bool middlewareRunning)
+        {
+            Devices = devices;
+            MiddlewareRunning = middlewareRunning;
+        }
+    }
+
+    #endregion
+    */
+
 
     public static class WeArtUtility
     {
         /// <summary>
-        /// Normalized value from compute dinamic grasp between GraspForce and 1
+        /// Function to remap value from [MinInput,MaxInput] to [MinOutput-MaxOutput]
         /// </summary>
-        public static float NormalizedGraspForceValue(float value)
+        /// <param name="value"></param>
+        /// <param name="minInput"></param>
+        /// <param name="maxInput"></param>
+        /// <param name="minOutput"></param>
+        /// <param name="maxOutput"></param>
+        /// <returns></returns>
+        public static float Remap(float value, float minInput, float maxInput, float minOutput, float maxOutput)
         {
-            return Math.Clamp(value, WeArtConstants.graspForce, 1.0f);
+            return minOutput + (value - minInput) * (maxOutput - minOutput) / (maxInput - minInput);
         }
     }
 
@@ -277,8 +343,9 @@ namespace WeArt.Core
     {
         public const string ipLocalHost = "127.0.0.1";
 
-        public const string WEART_SDK_TYPE = "SdkLLCSH";
-        public const string WEART_SDK_VERSION = "1.1.1";
+        public const string TRACKING_TYPE_1 = "TrackType1";
+        public const string WEART_SDK_TYPE = "SdkLLCsharp";
+        public const string WEART_SDK_VERSION = "2.0.0";
 
         public const float defaultTemperature = 0.5f;
         public const float minTemperature = 0f;
@@ -296,29 +363,46 @@ namespace WeArt.Core
         public const float minClosure = 0f;
         public const float maxClosure = 1f;
 
-        public const int defaultTextureIndex = (int)TextureType.ClickNormal;
-        public const int minTextureIndex = (int)TextureType.ClickNormal;
+        public const int defaultTextureIndex = (int)TextureType.Click;
+        public const int minTextureIndex = (int)TextureType.Click;
         public const int maxTextureIndex = (int)TextureType.DoubleSidedTape;
         public const int nullTextureIndex = 255;
-
-        public const float defaultTextureVelocity = 0f;
+        public const float defaultTextureVelocity = 0.5f;
+        public const float defaultTextureVelocity_X = 0.5f;
+        public const float defaultTextureVelocity_Y = 0f;
+        public const float defaultTextureVelocity_Z = 0f;
         public const float minTextureVelocity = 0f;
         public const float maxTextureVelocity = 0.5f;
 
+        public const float MaxSpeedForMaxTextVelocity = 0.15f; // 15cm/s original: 5cm/s 
+
         public const float defaultCollisionMultiplier = 20.0f;
-        public const float minCollisionMultiplier = 0f;
-        public const float maxCollisionMultiplier = 100f;
 
         public const float defaultVolumeTexture = 100.0f;
         public const float minVolumeTexture = 0.0f;
         public const float maxVolumeTexture = 100.0f;
 
-        public const float thresholdThumbClosure = 0.5f;
-        public const float thresholdIndexClosure = 0.5f;
-        public const float thresholdMiddleClosure = 0.5f;
+        public const float thresholdThumbClosure = 0.15f;
+        public const float thresholdIndexClosure = 0.15f;
+        public const float thresholdMiddleClosure = 0.15f;
 
         public const float graspForce = 0.3f;
         public const float dinamicForceSensibility = 10.0f;
+        public const float palmGraspClosureThreshold = 0.3f;
+
+        public const float delayStartCalibration = 0.5f; // seconds
+
+        public static byte ON = 0x01;
+        public static byte OFF = 0x00;
+
+        public static float MaxDistanceForMinStiffness = 0.06f; //6cm
+        public static float MaxDistanceForMaxStiffness = 0.02f; //2cm
+
+        public static float MaxDistanceForMinStiffnessMiddle = 0.1f; //10cm
+        public static float MaxDistanceForMaxStiffnessMiddle = 0.025f; //2.5cm
+
+        public static float MaxDistanceForMinStiffnessThumb = 0.04f; // 4cm
+        public static float MaxDistanceForMaxStiffnessThumb = 0.01f; // 1cm
 
 
         public static readonly IReadOnlyList<HandSide> HandSides = Enum.GetValues(typeof(HandSide))
