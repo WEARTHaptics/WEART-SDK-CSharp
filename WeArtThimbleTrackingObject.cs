@@ -3,6 +3,7 @@
 *	https://www.weart.it/
 */
 
+using System;
 using WeArt.Core;
 using WeArt.Messages;
 
@@ -71,6 +72,38 @@ namespace WeArt.Components
             {
                 Closure = trackingMessage.GetClosure(HandSide, ActuationPoint);
                 Abduction = trackingMessage.GetAbduction(HandSide, ActuationPoint);
+                return;
+            }
+            else if(message is TrackingMessageG2 trackingMessageG2)
+            {
+                if (trackingMessageG2.HandSide != _handSide) return;
+
+                ThimbleData thimbleData = GetThimbleData(trackingMessageG2);
+
+                Closure = new Closure { Value = thimbleData.Closure };
+                Abduction = new Abduction { Value = thimbleData.Abduction };
+                return;
+            }
+        }
+
+        private ThimbleData GetThimbleData(TrackingMessageG2 trackingMessageG2)
+        {
+            switch (_actuationPoint)
+            {
+                case ActuationPoint.Thumb:
+                    return trackingMessageG2.Thumb;
+                case ActuationPoint.Index:
+                    return trackingMessageG2.Index;
+                case ActuationPoint.Middle:
+                    return trackingMessageG2.Middle;
+                case ActuationPoint.Annular:
+                    return trackingMessageG2.Annular;
+                case ActuationPoint.Pinky:
+                    return trackingMessageG2.Pinky;
+                case ActuationPoint.Palm:
+                    return trackingMessageG2.Palm;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(_actuationPoint));
             }
         }
     }

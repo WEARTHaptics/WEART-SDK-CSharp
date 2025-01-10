@@ -235,6 +235,7 @@ namespace WeArt.Core
         public Accelerometer Accelerometer { get; set; }
         public Gyroscope Gyroscope { get; set; }
         public TimeOfFlight TimeOfFlight { get; set; }
+
     }
 
 
@@ -295,9 +296,48 @@ namespace WeArt.Core
         public bool ActuationsEnabled { get; set; } = false;
 
         /// <summary>
-        /// Status of the devices (TouchDIVERs) connected to the middleware
+        /// Describe the connection type WiFi, BLE or Wired (available only for WeartApp with TouchDIVER)
         /// </summary>
-        public List<DeviceStatusData> Devices { get; set; } = new List<DeviceStatusData>();
+        public ConnectionType ConnectionType { get; set; } = ConnectionType.BLE;
+
+        /// <summary>
+        /// Discovering and connecting the devices automatically (available only for WeartApp with TouchDIVER)
+        /// </summary>
+        public bool AutoConnection { get; set; } = false;
+
+        /// <summary>
+        /// The type of device connected to the app Virtual or Physical (available only for WeartApp with TouchDIVER)
+        /// </summary>
+        public DeviceSelection DeviceSelection { get; set; } = DeviceSelection.VirtualDevices;
+
+        /// <summary>
+        /// Playback tracking activation mode for virtual devices (available only for WeartApp with TouchDIVER)
+        /// </summary>
+        public bool TrackingPlayback { get; set; } = false;
+
+
+        /// <summary>
+        /// State of RawData log (available only for WeartApp with TouchDIVER)
+        /// </summary>
+        public bool RawDataLog { get; set; } = false;
+
+
+        /// <summary>
+        /// State of SensorOnMask log (available only for WeartApp with TouchDIVER)
+        /// </summary>
+        public bool SensorOnMask { get; set; } = false;
+
+
+        /// <summary>
+        /// Status of the devices (TouchDIVERs) connected to the middleware (only available with Middleware and TouchDIVER)
+        /// </summary>
+        public List<DeviceStatusData> DevicesTD { get; set; } = new List<DeviceStatusData>();
+
+        /// <summary>
+        /// Status of the devices (TouchDIVERPro) connected to the middleware (only available with WeartApp and TouchDIVERPro)
+        /// </summary>
+        public List<TouchDiverProStatusData> DevicesTDPro { get; set; } = new List<TouchDiverProStatusData>();
+
     }
 
     /*

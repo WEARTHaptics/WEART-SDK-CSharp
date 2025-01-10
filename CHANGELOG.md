@@ -7,11 +7,13 @@ All notable changes to this project will be documented in this file.
 ### Added
 * New TouchDIVER Pro features
 * Custom JSON converted class
+* 6 Actuaion Points (Thumb, Index, Middle, Annular, Pinky and Palm)
 
 ### Changed
 * Replaced Newtonsoft.JSON libraty to native System.text.json for deseralizing and serializing JSON data 
-
-### Removed
+* MiddlewareStatusUpdate is was up to date with new properties for managing WeartApp status and TouchDIVER status
+* WeArtTrackingRawDataObject now is providing data from TDPro
+* WeArtTrackingRawDataObject now is providing data from TDPro
 
 ### [1.3.0]
 

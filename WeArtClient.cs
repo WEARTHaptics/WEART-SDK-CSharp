@@ -444,6 +444,7 @@ namespace WeArt.Core
                         break;
                 }
             }
+            // Mange Calibration Message
             else if (message is TrackingCalibrationResult calibrationResult)
             {
                 if (calibrationResult.Success)
@@ -451,6 +452,7 @@ namespace WeArt.Core
                 else
                     OnCalibrationResultFail?.Invoke(calibrationResult.HandSide);
             }
+            // Manage Middleware Status (TouchDIVER)
             else if (message is MiddlewareStatusMessage mwStatusMessage)
             {
                 _lastStatus.Timestamp = mwStatusMessage.Timestamp;
@@ -462,10 +464,37 @@ namespace WeArt.Core
 
                 OnMiddlewareStatusUpdate?.Invoke(_lastStatus);
             }
+            //Manage Device Status (TouchDIVER)
             else if (message is DevicesStatusMessage devicesStatusMessage)
             {
                 _lastStatus.Timestamp = devicesStatusMessage.Timestamp;
-                _lastStatus.Devices = devicesStatusMessage.Devices.ToList(); // Clone list
+                _lastStatus.DevicesTD = devicesStatusMessage.Devices.ToList(); // Clone list
+
+                OnMiddlewareStatusUpdate?.Invoke(_lastStatus);
+            }
+            //Manage App Status message
+            else if(message is WeartAppStatusMessage waStatusMessage)
+            {
+                _lastStatus.Timestamp = waStatusMessage.Timestamp;
+                _lastStatus.Status = waStatusMessage.Status;
+                _lastStatus.Version = waStatusMessage.Version;
+                _lastStatus.StatusCode = waStatusMessage.StatusCode;
+                _lastStatus.ErrorDesc = waStatusMessage.ErrorDesc;
+                _lastStatus.ActuationsEnabled = waStatusMessage.ActuationsEnabled;
+                _lastStatus.ConnectionType = waStatusMessage.ConnectionType;
+                _lastStatus.AutoConnection = waStatusMessage.AutoConnection;
+                _lastStatus.DeviceSelection = waStatusMessage.DeviceSelection;
+                _lastStatus.TrackingPlayback = waStatusMessage.TrackingPlayback;
+                _lastStatus.RawDataLog = waStatusMessage.RawDataLog;
+                _lastStatus.SensorOnMask = waStatusMessage.SensorOnMask;
+                
+                OnMiddlewareStatusUpdate?.Invoke(_lastStatus);
+            }
+            //Manage TouchDIVER Pro Status
+            else if(message is TouchDiverProStatus tdProStatus)
+            {
+                _lastStatus.Timestamp = tdProStatus.Timestamp;
+                _lastStatus.DevicesTDPro = tdProStatus.Devices.ToList(); // Clone list
 
                 OnMiddlewareStatusUpdate?.Invoke(_lastStatus);
             }
