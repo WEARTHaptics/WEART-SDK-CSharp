@@ -33,6 +33,7 @@ namespace WeArt.Core
         internal bool _active;
         private float _vz;
         private float _volume;
+        private float[] _parameters = Array.Empty<float>();
 
 
         /// <summary>
@@ -41,8 +42,9 @@ namespace WeArt.Core
         public TextureType TextureType
         {
             get => _textureType;
-            set {
-                if((int)value > WeArtConstants.maxTextureIndex || (int)value < WeArtConstants.minTextureIndex)
+            set
+            {
+                if ((int)value > WeArtConstants.maxTextureIndex || (int)value < WeArtConstants.minTextureIndex)
                 {
                     _textureType = (TextureType)WeArtConstants.nullTextureIndex;
                 }
@@ -77,6 +79,11 @@ namespace WeArt.Core
             set => _active = value;
         }
 
+        public float[] Parameters
+        {
+            get => (float[])_parameters.Clone();
+            set => _parameters = (float[])(value?.Clone() ?? Array.Empty<float>());
+        }
 
         /// <summary>
         /// True if the object is a <see cref="Texture"/> instance with the same activation status, index and velocity
@@ -89,7 +96,8 @@ namespace WeArt.Core
                 TextureType == texture.TextureType &&
                 ApproximateFloatComparer.Instance.Equals(Velocity, texture.Velocity) &&
                 Volume == texture.Volume &&
-                Active == texture.Active;
+                Active == texture.Active &&
+                _parameters.SequenceEqual(texture._parameters);
         }
 
         /// <summary>Basic <see cref="GetHashCode"/> implementation</summary>
@@ -100,7 +108,15 @@ namespace WeArt.Core
         /// <returns>A clone of this object</returns>
         public object Clone()
         {
-            return this;
+            return new Texture
+            {
+                TextureType = this.TextureType,
+                Velocity = this.Velocity,
+                Volume = this.Volume,
+                Active = this.Active,
+                Parameters = (float[])this._parameters.Clone()
+            };
         }
+
     }
 }
