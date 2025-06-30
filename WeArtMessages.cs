@@ -202,6 +202,7 @@ namespace WeArt.Messages
         public int TextureIndex;
         public float[] TextureVelocity;
         public float TextureVolume;
+        public float[] Parameters;
         public HandSide HandSide;
         public ActuationPoint ActuationPoint;
     }

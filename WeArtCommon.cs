@@ -422,6 +422,7 @@ namespace WeArt.Core
         public const float minVolumeTexture = 0.0f;
         public const float maxVolumeTexture = 100.0f;
 
+        public static readonly float[] defaultTextureParameters = Enumerable.Repeat(1.0f, 8).ToArray();
         public const float thresholdThumbClosure = 0.15f;
         public const float thresholdIndexClosure = 0.15f;
         public const float thresholdMiddleClosure = 0.15f;

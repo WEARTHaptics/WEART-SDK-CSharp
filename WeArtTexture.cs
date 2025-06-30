@@ -24,7 +24,8 @@ namespace WeArt.Core
             TextureType = (TextureType)WeArtConstants.defaultTextureIndex,
             Velocity = WeArtConstants.defaultTextureVelocity,
             Volume = WeArtConstants.defaultVolumeTexture,
-            Active = false
+            Active = false,
+            Parameters = WeArtConstants.defaultTextureParameters
         };
 
 
@@ -33,7 +34,7 @@ namespace WeArt.Core
         internal bool _active;
         private float _vz;
         private float _volume;
-        private float[] _parameters = Array.Empty<float>();
+        private float[] _parameters;
 
 
         /// <summary>
@@ -81,7 +82,7 @@ namespace WeArt.Core
 
         public float[] Parameters
         {
-            get => (float[])_parameters.Clone();
+            get => _parameters != null ? (float[])_parameters.Clone() : Array.Empty<float>();
             set => _parameters = (float[])(value?.Clone() ?? Array.Empty<float>());
         }
 
@@ -114,7 +115,7 @@ namespace WeArt.Core
                 Velocity = this.Velocity,
                 Volume = this.Volume,
                 Active = this.Active,
-                Parameters = (float[])this._parameters.Clone()
+                Parameters = this._parameters != null ? (float[])this._parameters.Clone() : Array.Empty<float>()
             };
         }
 

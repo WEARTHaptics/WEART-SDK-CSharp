@@ -275,6 +275,7 @@ namespace WeArt.Components
             TextureIndex = (int)_texture.TextureType,
             TextureVelocity = new float[] { 0.5f, 0.0f, _texture.Velocity },
             TextureVolume = _texture.Volume,
+            Parameters = _texture.Parameters,
             HandSide = handSide,
             ActuationPoint = actuationPoint
         });
