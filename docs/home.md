@@ -3,7 +3,8 @@
 Welcome to the Weart Low-Level C# SDK documentation.
 
 The SDK allows to connect to the Weart middleware and perform various actions with the TouchDIVER devices:
-* Start and Stop the middleware operations
+* Start and Stop the WEART App operations
+* Retrieve App and device status
 * Calibrate the device
 * Receive tracking data from the devices
 * Receive raw data from the thimble's motion sensors 
@@ -19,7 +20,7 @@ The SDK allows to connect to the Weart middleware and perform various actions wi
 
 # Setup
 The minimum setup to use the weart SDK consists of:
-* A PC with the Middleware installed
+* A PC with the WEART App installed
 * A TouchDIVER device
 * A C# project using the Low-Level SDK 
 
@@ -38,10 +39,11 @@ using WeArt.Components;
 using WeArt.Messages;
 ~~~~~~~~~~~~~
 
-Create the WeArtClient and start the communication with the middleware:
+Get the WeArtClient and start the communication with the App:
 ~~~~~~~~~~~~~{.cs}
-	// Create weart client
-	WeArtClient weArtClient = new WeArtClient { IpAddress = WeArtNetwork.LocalIPAddress, Port = 13031 };
+	// Get weart client
+	WeArtController weArtController = new WeArtController();
+	weartClient = weArtController.Client;
 
 	// Start connection and send start message to middleware
 	weArtClient.Start();
@@ -72,13 +74,14 @@ The SDK client allows to add callbacks to monitor the calibration procedure stat
 For example, to start the calibration and print "Success" or "Failed":
 
 ~~~~~~~~~~~~~{.cs}
-	weartClient.OnCalibrationStart += Console.WriteLine("Calibration start!");
-	weArtClient.OnCalibrationResultSuccess += (HandSide hand) => Console.WriteLine("Success!");
-	weArtClient.OnCalibrationResultFail += (HandSide hand) => Console.WriteLine("Failed");
-	weartClient.OnCalibrationFinish += (HandSide hand) => Console.WriteLine("Calibration finish!");
+	weartClient.OnConnectionStatusChanged += UpdateConnectionStatus;
+	weartClient.OnCalibrationStart += OnCalibrationStart;
+	weartClient.OnCalibrationResultSuccess += (HandSide hand) => OnCalibrationResult(hand, true);
+	weartClient.OnCalibrationResultFail += (HandSide hand) => OnCalibrationResult(hand, false);
+	weartClient.OnCalibrationFinish += (HandSide hand) => Console.WriteLine("Finish");
 
 	// Start calibraiton on demand
-	weArtClient.StartCalibration();
+	weartClient.StartCalibration();
 ~~~~~~~~~~~~~
 
 ## Haptic feedback
@@ -95,7 +98,7 @@ To create one, use the following code:
 	// create haptic object to manage actuation on Right hand and Index Thimble
 	WeArtHapticObject hapticObject = new WeArtHapticObject(_weartClient);
 	hapticObject.HandSides = HandSideFlags.Right;
-	hapticObject.ActuationPoints = ActuationPointFlags.Index;
+	hapticObject.ActuationPoints = ActuationPointFlags.Index; //Choose actuation points 
 ~~~~~~~~~~~~~
 
 The attirbutes handSideFlag and actuationPointFlag accept multiple values.
@@ -257,14 +260,18 @@ weArtClient.OnMiddlewareStatusUpdate += (MiddlewareStatusUpdate message) => {
 
 The middleware status callback will receive the MiddlewareStatusUpdate object, which includes:
 * Middleware version
-* Middleware status
-* Status code and description  
+* Middleware status (MiddlewareStatus)
+* Status code and description
+* Warning code and description (only for the TouchDIVER Pro)
 * Whether actuations are enabled or not
-* List of the connected devices and their status
+* Whether the tracking playback is enabled or not (only for the TouchDIVER Pro)
+* Whether the raw tracking data is enabled or not (only for the TouchDIVER Pro)
+* Whether the sensor on mask is enabled or not (only for the TouchDIVER Pro)
+* List of the connected devices. For each device:
 	* Mac Address
-	* Assigned HandSide
-	* Overall battery level
-	* Status of each thimble (actuation point, connected or not, status code etc..)
+	* 	Assigned HandSide
+	* 	Overall battery level
+	* 	Status of each thimble (actuation point, connected or not, status code etc..)
 
 ### Status Codes
 The MiddlewareListener object allows to get the middleware status, which includes the latest status code sent by the middleware while performing
@@ -283,10 +290,26 @@ The current status codes (along with their description) are:
 | 105 | SET_IMU_SAMPLE_RATE_ERROR | Error while setting IMU Sample Rate! Device Disconnected! |
 | 106 | RUNNING_SENSOR_ON_MASK | Inconsistency on Analog Sensors raw data! Please try again or Restart your device/s! |
 | 107 | RUNNING_DEVICE_CHARGING | Can't start while the devices are connected to the power supply |
+| 108 | BATTERY_REMOVED | Battery is removed, please insert a battery or device will shut down |
+| 109 | BATTERY_LOW_WARNING | Battery low, please connect the device to a power supply |
 | 200 | CONSECUTIVE_TRACKING_ERRORS | Too many consecutive running sensor errors, stopping session |
 | 201 | DONGLE_DISCONNECT_RUNNING | BLE Dongle disconnected while running, stopping session |
 | 202 | TD_DISCONNECT_RUNNING | TouchDIVER disconnected while running, stopping session |
 | 203 | DONGLE_CONNECTION_ERROR | Error on Dongle during connection phase! |
+| 204 | USB_CONNECTION_ERROR | Can not use the device through Bluetooth while connected to a USB port |
+| 205 | BLE_BAD_SIGNAL_ERROR | Bad BLE signal |
 | 300 | STOP_GENERIC_ERROR | Generic error occurred while stopping session |
 
 @note The description of each status code might change between different Middleware versions, use the status code to check instead of the description.
+
+### Warning Codes
+The MiddlewareListener object allows to get the middleware status, which includes the latest warning code sent by the middleware while performing its operations.
+
+The current warning codes (along with their description) are:
+
+| Warning Code |   | Description |
+|---|---|---|
+| 0 | OK | Ok |
+| 100 | GENERIC_WARNING | Check WeArtApp |
+| 101 | BATTERY_LOW | Device battery is low |
+| 102 | SIGNAL_WEAK | Connection signal is weak |

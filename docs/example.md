@@ -202,7 +202,7 @@ In particular, it's possible to choose the hand and actuation point from which t
 * Timestamp of the last sample received
 * Accelerometer data (on the x,y,z axis)
 * Gyroscope data (on the x,y,z axis)
-* Time of Flight distance (in mm)
+* Time of Flight distance (in mm) [only for TD G1]
 
 To start receiving raw data, click on the "Start Raw Data" button, and to stop click on the "Stop Raw Data" button.
 
@@ -223,7 +223,9 @@ private void RenderRawDataAsync(TrackingRawData data)
         Gyro_Y.Text = data.Gyroscope.Y.ToString();
         Gyro_Y.Text = data.Gyroscope.Z.ToString();
 
-        TimeOfFlight.Text = data.TimeOfFlight.Distance.ToString();
+        // Only available for TouchDIVER (G1)
+        if(_deviceGeneration == DeviceGeneration.TD)
+            TimeOfFlight.Text = data.TimeOfFlight.Distance.ToString();
 
         LastSampleTime.Text = data.Timestamp.ToString("yyyy/MM/dd HH:mm:ss.fff");
     });
@@ -276,74 +278,91 @@ In this way, the UI is updated on every middleware and devices status change sen
 For the devices status, the example app uses a custom user control which receives the status of a device and shows it.
 
 ~~~~~~~~~~~~~{.cs}
-// Update buttons and middleware status
 private void UpdateUIBasedOnStatus(MiddlewareStatusUpdate statusUpdate)
 {
-	if (statusUpdate is null)
-		return;
+    if (statusUpdate is null)
+        return;
 
-	MiddlewareStatus status = statusUpdate.Status;
-	bool isRunning = status == MiddlewareStatus.RUNNING;
+    MiddlewareStatus status = statusUpdate.Status;
+    bool isRunning = status == MiddlewareStatus.RUNNING;
 
-	Color statusColor = MiddlewareStatusColor(status);
-	bool isStatusOk = statusUpdate.StatusCode == 0;
+    Color statusColor = MiddlewareStatusColor(status);
+    bool isStatusOk = statusUpdate.StatusCode == 0;
 
-	Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, (Windows.UI.Core.DispatchedHandler)(() =>
-	{
-		// Update buttons
-		StartClient.IsEnabled = status != MiddlewareStatus.RUNNING && status != MiddlewareStatus.STARTING;
-		StopClient.IsEnabled = isRunning;
-		StartCalibration.IsEnabled = status == MiddlewareStatus.RUNNING;
+    Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, (Windows.UI.Core.DispatchedHandler)(() =>
+    {
+        // Update buttons
+        StartClient.IsEnabled = status != MiddlewareStatus.RUNNING && status != MiddlewareStatus.STARTING;
+        StopClient.IsEnabled = isRunning;
+        StartCalibration.IsEnabled = status == MiddlewareStatus.RUNNING;
 
-		AddEffectSample1.IsEnabled = isRunning;
-		AddEffectSample2.IsEnabled = isRunning;
-		AddEffectSample3.IsEnabled = isRunning;
-		RemoveEffects.IsEnabled = isRunning;
-		ButtonStartRawData.IsEnabled = isRunning;
-		ButtonStopRawData.IsEnabled = isRunning;
+        AddEffectSample1.IsEnabled = isRunning;
+        AddEffectSample2.IsEnabled = isRunning;
+        AddEffectSample3.IsEnabled = isRunning;
+        RemoveEffects.IsEnabled = isRunning;
+        ButtonStartRawData.IsEnabled = isRunning;
+        ButtonStopRawData.IsEnabled = isRunning;
 
 
-		// Update middleware status panel
-		MiddlewareStatus_Text.Text = status.ToString();
-		MiddlewareStatus_Text.Foreground = new SolidColorBrush(statusColor);
+        // Update middleware status panel
+        MiddlewareStatus_Text.Text = status.ToString();
+        MiddlewareStatus_Text.Foreground = new SolidColorBrush(statusColor);
 
-		if(statusUpdate.Version != null)
-			MiddlewareVersion_Text.Text = statusUpdate.Version;
+        if(statusUpdate.Version != null)
+            MiddlewareVersion_Text.Text = statusUpdate.Version;
 
-		Brush statusCodeBrush = new SolidColorBrush(isStatusOk ? Colors.Green : Colors.Red);
-		MwStatusCode.Text = statusUpdate.StatusCode.ToString();
-		MwStatusCode.Foreground = statusCodeBrush;
-		MwStatusCodeDesc.Text = isStatusOk ? "OK" : (statusUpdate.ErrorDesc != null ? statusUpdate.ErrorDesc : "");
-		MwStatusCodeDesc.Foreground = statusCodeBrush;
+        Brush statusCodeBrush = new SolidColorBrush(isStatusOk ? Colors.Green : Colors.Red);
+        MwStatusCode.Text = statusUpdate.StatusCode.ToString();
+        MwStatusCode.Foreground = statusCodeBrush;
+        MwStatusCodeDesc.Text = isStatusOk ? "OK" : (statusUpdate.ErrorDesc != null ? statusUpdate.ErrorDesc : "");
+        MwStatusCodeDesc.Foreground = statusCodeBrush;
 
-		ConnectedDevicesNum_Text.Text = statusUpdate.Devices.Count.ToString();
+        ConnectedDevicesNum_Text.Text = statusUpdate.DevicesTD.Count.ToString();
 
-		AddEffectSample1.IsEnabled = isRunning;
-		AddEffectSample2.IsEnabled = isRunning;
-		AddEffectSample3.IsEnabled = isRunning;
-		RemoveEffects.IsEnabled = isRunning;
-		ButtonStartRawData.IsEnabled = isRunning;
-		ButtonStopRawData.IsEnabled = isRunning;
-	}));
+        AddEffectSample1.IsEnabled = isRunning;
+        AddEffectSample2.IsEnabled = isRunning;
+        AddEffectSample3.IsEnabled = isRunning;
+        RemoveEffects.IsEnabled = isRunning;
+        ButtonStartRawData.IsEnabled = isRunning;
+        ButtonStopRawData.IsEnabled = isRunning;
+    }));
 }
 
 private void UpdateDevicesStatus(MiddlewareStatusUpdate statusUpdate)
 {
-	LeftHand.Connected = false;
-	RightHand.Connected = false;
-	foreach (DeviceStatus device in statusUpdate.Devices)
-	{
-		if(device.HandSide == HandSide.Left)
-		{
-			LeftHand.Device = device;
-			LeftHand.Connected = true;
-		} else
-		{
-			RightHand.Device = device;
-			RightHand.Connected = true;
-		}
-	}
-	LeftHand.Refresh();
-	RightHand.Refresh();
+    LeftHand.Connected = false;
+    RightHand.Connected = false;
+
+    //Manage TouchDIVER devices
+    foreach (DeviceStatusData device in statusUpdate.DevicesTD)
+    {
+        if(device.HandSide == HandSide.Left)
+        {
+            LeftHand.Device = device;
+            LeftHand.Connected = true;
+        } else
+        {
+            RightHand.Device = device;
+            RightHand.Connected = true;
+        }
+    }
+
+    //Manage TouchDIVERPro devices
+    foreach (TouchDiverProStatusData device in statusUpdate.DevicesTDPro)
+    {
+        if (device.HandSide == HandSide.Left)
+        {
+            LeftHand.TouchDiverPro = device;
+            LeftHand.Connected = true;
+        }
+        else
+        {
+            RightHand.TouchDiverPro = device;
+            RightHand.Connected = true;
+        }
+    }
+
+    LeftHand.Refresh();
+    RightHand.Refresh();
 }
 ~~~~~~~~~~~~~
