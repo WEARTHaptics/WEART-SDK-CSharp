@@ -190,9 +190,9 @@ The abduction value ranges from 0 (finger near the hand's central axis) to 1 (fi
 
 It's possible to receive the raw data from the sensors on each thimble (and the control unit), in addition to the tracking data.
 Each sensor has:
-* 3-axis accelerometer
-* 3-axis gyroscope
-* Time of Flight sensor
+* 3-axis accelerometer [expressed in 'g']
+* 3-axis gyroscope [expressed in 'deg/s']
+* Time of Flight sensor <b>(not available for TouchDIVER Pro)</b> [expressed in millimetres between the finger and palm]
 
 To read these values, create a WeArtTrackingRawDataObject and add it to the client.
 ~~~~~~~~~~~~~{.cs}
@@ -223,6 +223,9 @@ received from the TouchDIVER.
 ## Analog Raw Sensors Data
 
 It's possible to receive the raw data from the sensors on each thimble (and the control unit), instead of the tracking data when this function is activated on the Middleware.
+
+@note Analog sensors are not available for the TouchDIVER Pro.
+
 Each sensor has:
 * NTC - Negative Temperature Coefficient (raw data and converted degree)
 * FSR - force sensing resistor (raw adata and converted newton)
@@ -262,16 +265,21 @@ The middleware status callback will receive the MiddlewareStatusUpdate object, w
 * Middleware version
 * Middleware status (MiddlewareStatus)
 * Status code and description
-* Warning code and description (only for the TouchDIVER Pro)
+* Warning code and description <b>(only for the TouchDIVER Pro)</b>
 * Whether actuations are enabled or not
-* Whether the tracking playback is enabled or not (only for the TouchDIVER Pro)
-* Whether the raw tracking data is enabled or not (only for the TouchDIVER Pro)
-* Whether the sensor on mask is enabled or not (only for the TouchDIVER Pro)
+* Whether the tracking playback is enabled or not <b>(only for the TouchDIVER Pro)</b>
+* Whether the raw tracking data is enabled or not <b>(only for the TouchDIVER Pro)</b>
+* Whether the sensor on mask is enabled or not <b>(only for the TouchDIVER Pro)</b>
+* Connection Type Bluetooth/Wifi/Usb/None when no device is connected <b>(only for the TouchDIVER Pro)</b>
+* Device Selction: PhysicalDevices / VirtualDevices <b>(only for the TouchDIVER Pro)</b>
+* Whether the Raw data is enabled
+* Whether the Tracking Playback is enabled <b>(only for the TouchDIVER Pro)</b>
+* Wether the Analog raw data log is enabled <b>(only for the TouchDIVER Pro)</b>
 * List of the connected devices. For each device:
 	* Mac Address
-	* 	Assigned HandSide
-	* 	Overall battery level
-	* 	Status of each thimble (actuation point, connected or not, status code etc..)
+	* Assigned HandSide	
+	* Overall battery level
+	* Status of each thimble (actuation point, connected or not, status code etc..)
 
 ### Status Codes
 The MiddlewareListener object allows to get the middleware status, which includes the latest status code sent by the middleware while performing

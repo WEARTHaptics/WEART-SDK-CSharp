@@ -13,7 +13,6 @@ All notable changes to this project will be documented in this file.
 * Replaced Newtonsoft.JSON libraty to native System.text.json for deseralizing and serializing JSON data 
 * MiddlewareStatusUpdate is was up to date with new properties for managing WeartApp status and TouchDIVER status
 * WeArtTrackingRawDataObject now is providing data from TDPro
-* WeArtTrackingRawDataObject now is providing data from TDPro
 
 ### [1.3.0]
 
