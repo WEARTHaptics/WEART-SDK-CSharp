@@ -385,7 +385,7 @@ namespace WeArt.Core
 
         public const string TRACKING_TYPE_1 = "TrackType1";
         public const string WEART_SDK_TYPE = "SdkLLCsharp";
-        public const string WEART_SDK_VERSION = "2.0.0";
+        public const string WEART_SDK_VERSION = "2.0.1";
 
         public const float defaultTemperature = 0.5f;
         public const float minTemperature = 0f;

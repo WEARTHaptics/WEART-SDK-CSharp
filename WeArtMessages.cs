@@ -621,6 +621,16 @@ namespace WeArt.Messages
         [JsonConverter(typeof(EnumConverter<HandSide>))]
         public HandSide HandSide { get; set; }
 
+        /// <summary>
+        /// RSSI signal strength in dBm.
+        /// </summary>
+        public double SignalStrength { get; set; }
+
+        /// <summary>
+        /// Date and time of the last sensor calibration (UTC).
+        /// </summary>
+        public DateTime SensorsCalibDate { get; set; }
+
         public MasterData Master { get; set; } = new MasterData();
 
         [JsonConverter(typeof(ListConverter<TouchDiverProThimbleStatus>))]

@@ -300,6 +300,7 @@ The current status codes (along with their description) are:
 | 107 | RUNNING_DEVICE_CHARGING | Can't start while the devices are connected to the power supply |
 | 108 | BATTERY_REMOVED | Battery is removed, please insert a battery or device will shut down |
 | 109 | BATTERY_LOW_WARNING | Battery low, please connect the device to a power supply |
+| 111 | BATTERY_FAULT_ERROR | Battery has a fault, please contact the support team |
 | 200 | CONSECUTIVE_TRACKING_ERRORS | Too many consecutive running sensor errors, stopping session |
 | 201 | DONGLE_DISCONNECT_RUNNING | BLE Dongle disconnected while running, stopping session |
 | 202 | TD_DISCONNECT_RUNNING | TouchDIVER disconnected while running, stopping session |
